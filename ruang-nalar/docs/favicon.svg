@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Ruang Nalar">
+  <rect width="64" height="64" rx="14" fill="#1c2b6b"/>
+  <path d="M30 34c0-5 7-5 7 0s-8 9-13 3-1-15 9-17 19 5 17 16" fill="none" stroke="#f6d24b" stroke-width="3.6" stroke-linecap="round"/>
+  <path d="M10 46c8 6 20 8 30 2" fill="none" stroke="#4aa3c7" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="47" cy="17" r="8" fill="#6aa84f"/>
+  <circle cx="47" cy="17" r="4.6" fill="#fff"/>
+  <circle cx="48" cy="17.4" r="2.3" fill="#1a1a2e"/>
+</svg>
