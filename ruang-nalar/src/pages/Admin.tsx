@@ -6,6 +6,7 @@ import { GerbangSandi } from '../components/admin/GerbangSandi'
 import { Ikon } from '../components/art/Ikon'
 import { Panel } from '../components/art/Panel'
 import { Footer } from '../components/Footer'
+import { TokoAdmin } from '../components/toko/TokoAdmin'
 import { Nalar } from '../components/nalar/Nalar'
 import { useNalar } from '../components/nalar/NalarContext'
 import { PETUNJUK_ADMIN } from '../config'
@@ -105,6 +106,8 @@ function RuangRedaksi({ onKunci }: { onKunci: () => void }) {
           }}
         />
       )}
+
+      {layar.tipe === 'daftar' && <TokoAdmin onPesan={setPesan} />}
     </div>
   )
 }

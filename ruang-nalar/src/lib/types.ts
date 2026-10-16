@@ -86,7 +86,7 @@ export interface ParsedEbook {
 
 // ---------- ebook di pustaka ----------
 
-export type SumberEbook = 'publik' | 'lokal'
+export type SumberEbook = 'publik' | 'lokal' | 'toko'
 
 export interface Ebook {
   id: string
@@ -95,6 +95,10 @@ export interface Ebook {
   parsed: ParsedEbook
   /** hanya untuk ebook lokal */
   diperbarui?: number
+  /** hanya untuk ebook toko (berbayar): harga rupiah */
+  harga?: number
+  /** ebook toko yang isinya belum bisa dibaca (belum login / belum beli / belum termuat) */
+  terkunci?: boolean
 }
 
 /** Bentuk yang disimpan di IndexedDB untuk ebook buatan admin. */

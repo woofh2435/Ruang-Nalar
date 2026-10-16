@@ -1019,3 +1019,34 @@ html.kurang-gerak .goyang,
 html.ringan .goyang {
   animation: none;
 }
+
+/* kotak centang yang jelas terlihat (bawaan browser pada tema gelap sulit dibedakan antara tercentang/tidak) */
+.kotak-cek {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-grid;
+  place-content: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  border: 2px solid var(--tinta);
+  border-radius: 6px;
+  background: #fffaf0;
+  cursor: pointer;
+}
+.kotak-cek::after {
+  content: '';
+  width: 12px;
+  height: 7px;
+  border-left: 3px solid var(--tinta);
+  border-bottom: 3px solid var(--tinta);
+  transform: translateY(-1px) rotate(-45deg) scale(0);
+  transition: transform 0.12s ease;
+}
+.kotak-cek:checked {
+  background: var(--kuning-pusaran);
+}
+.kotak-cek:checked::after {
+  transform: translateY(-1px) rotate(-45deg) scale(1);
+}

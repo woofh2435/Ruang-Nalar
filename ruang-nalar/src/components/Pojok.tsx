@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { bunyiDidukung, bunyiNyala, setBunyi } from '../lib/audio'
 import { useTemaGlobal } from '../lib/store'
+import { useToko } from '../lib/toko/store'
 import { Ikon } from './art/Ikon'
 import { useNalar } from './nalar/NalarContext'
 
@@ -8,6 +10,7 @@ import { useNalar } from './nalar/NalarContext'
 
 export function Pojok() {
   const [tema, setTema] = useTemaGlobal()
+  const tk = useToko()
   const { katakan } = useNalar()
   const [suara, setSuara] = useState(bunyiNyala())
   const mendukung = bunyiDidukung()
@@ -17,6 +20,17 @@ export function Pojok() {
 
   return (
     <nav className="fixed right-3 top-3 z-[60] flex gap-2" aria-label="Pengaturan tampilan">
+      {tk.mode !== 'mati' && (
+        <Link
+          to={tk.sesi ? '/akun' : '/masuk'}
+          className="tombol tombol-ikon"
+          aria-label={tk.sesi ? `Akunku (${tk.sesi.email})` : 'Masuk atau buat akun'}
+          title={tk.sesi ? `Akunku: ${tk.sesi.email}` : 'Masuk / buat akun'}
+          style={tk.sesi ? { background: 'var(--kuning-pusaran)' } : undefined}
+        >
+          <Ikon n="pengguna" />
+        </Link>
+      )}
       <button
         type="button"
         className="tombol tombol-ikon"

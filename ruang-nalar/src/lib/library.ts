@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import { NAMA_PENULIS_DEFAULT } from '../config'
 import { namaPenulis, parseEbook } from './parser'
 import { K, kvAmbil, useEbookLokal, useKv } from './store'
+import { useEbookToko } from './toko/store'
 import type { CatatanEbookLokal, Ebook, ParsedEbook } from './types'
 
 // Semua .md di src/content/ dimuat saat build.
@@ -58,15 +59,24 @@ export function useSemuaEbook(): Ebook[] {
   return useMemo(() => susunPustaka(lokal, urutan), [lokal, urutan])
 }
 
-/** Hanya yang berstatus terbit. Dipakai rak di beranda. */
+/** Gabungkan ebook berbayar (toko) di belakang yang lain; id yang bentrok dengan ebook publik/lokal diabaikan. */
+export function gabungToko(semua: Ebook[], toko: Ebook[]): Ebook[] {
+  if (toko.length === 0) return semua
+  const dipakai = new Set(semua.map((e) => e.id))
+  return [...semua, ...toko.filter((e) => !dipakai.has(e.id))]
+}
+
+/** Hanya yang berstatus terbit (+ ebook berbayar dari toko, bila fitur toko aktif). Dipakai rak di beranda. */
 export function useEbookTerbit(): Ebook[] {
   const semua = useSemuaEbook()
-  return useMemo(() => semua.filter((e) => e.parsed.meta.status === 'terbit'), [semua])
+  const toko = useEbookToko()
+  return useMemo(() => gabungToko(semua.filter((e) => e.parsed.meta.status === 'terbit'), toko), [semua, toko])
 }
 
 export function useEbook(id: string | undefined): Ebook | undefined {
   const semua = useSemuaEbook()
-  return useMemo(() => semua.find((e) => e.id === id), [semua, id])
+  const toko = useEbookToko()
+  return useMemo(() => gabungToko(semua, toko).find((e) => e.id === id), [semua, toko, id])
 }
 
 export function penulisTampil(e: Ebook): string {

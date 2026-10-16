@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { NAMA_PENULIS_DEFAULT } from '../../config'
 import { useLencana } from '../../lib/library'
+import { dimiliki, useToko } from '../../lib/toko/store'
+import { rupiah } from '../../lib/toko/tipe'
 import { namaPenulis } from '../../lib/parser'
 import { hashBiji } from '../../lib/rng'
 import { TEMA } from '../../lib/tema'
@@ -112,17 +114,31 @@ export function SampulGambar({ meta, id, className = '' }: GambarProps) {
 /** Sampul di rak: tautan ke pembaca + lencana "Selesai Dibaca" dan "Kuis Sempurna". */
 export function SampulBuku({ ebook }: { ebook: Ebook }) {
   const len = useLencana(ebook)
+  const tk = useToko()
   const { meta } = ebook.parsed
-  const keterangan = [len.selesaiDibaca && 'Selesai dibaca', len.kuisSempurna && 'Kuis sempurna'].filter(Boolean).join(', ')
+  const toko = ebook.sumber === 'toko'
+  const milik = toko && dimiliki(tk, ebook.id)
+  const keteranganToko = toko ? (milik ? 'Sudah kamu miliki' : `Berbayar, ${rupiah(ebook.harga ?? 0)}`) : ''
+  const keterangan = [len.selesaiDibaca && 'Selesai dibaca', len.kuisSempurna && 'Kuis sempurna', keteranganToko].filter(Boolean).join(', ')
   return (
     <div className="relative">
       <Link
         to={`/baca/${ebook.id}`}
         className="sampul"
-        aria-label={`Baca ${meta.judul}${meta.subjudul ? ', ' + meta.subjudul : ''}${keterangan ? '. ' + keterangan : ''}`}
+        aria-label={`${toko && !milik ? 'Lihat' : 'Baca'} ${meta.judul}${meta.subjudul ? ', ' + meta.subjudul : ''}${keterangan ? '. ' + keterangan : ''}`}
       >
         <SampulGambar meta={meta} id={ebook.id} />
       </Link>
+      {toko && (
+        <span
+          className="pointer-events-none absolute left-4 top-2 z-10 inline-flex items-center gap-1 rounded-sm border-2 border-tinta px-1.5 py-0.5 font-display text-[0.68rem] font-extrabold tracking-wide text-tinta shadow-[2px_3px_0_rgba(8,12,40,0.4)]"
+          style={{ background: milik ? '#dff0d2' : '#f4e9cf' }}
+          aria-hidden="true"
+        >
+          <Ikon n={milik ? 'cek' : 'kunci'} ukuran={12} tebal={3} />
+          {milik ? 'Dimiliki' : rupiah(ebook.harga ?? 0)}
+        </span>
+      )}
       {(len.selesaiDibaca || len.kuisSempurna) && (
         <div className="pointer-events-none absolute -right-2 top-9 z-10 flex flex-col items-end gap-1">
           {len.selesaiDibaca && (

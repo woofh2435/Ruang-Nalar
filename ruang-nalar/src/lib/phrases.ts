@@ -36,6 +36,12 @@ export type Kejadian =
   | 'adminImpor'
   | 'adminEkspor'
   | 'adminTema'
+  | 'tokoMasuk'
+  | 'tokoKeluar'
+  | 'tokoBeli'
+  | 'tokoGalat'
+  | 'tokoKunci'
+  | 'tokoAdmin'
 
 export interface Frasa {
   t: string
@@ -132,6 +138,12 @@ export const FRASA: Record<Kejadian, Frasa[]> = {
   adminImpor: [f('Cadangan masuk! Rak jadi ramai lagi.', 'senang')],
   adminEkspor: [f('Cadangan diunduh. Simpan baik-baik, ya.', 'bangga')],
   adminTema: [f('Ganti warna! Kulitku ikut menyesuaikan.', 'kedip-nakal')],
+  tokoMasuk: [f('Selamat datang! Aku ingat kamu, kok.', 'senang'), f('Berhasil masuk. Ayo lanjut baca!', 'semangat')],
+  tokoKeluar: [f('Sampai jumpa! Jangan lupa balik lagi.', 'sedih')],
+  tokoBeli: [f('Berhasil! Ebook barumu sudah terbuka.', 'bangga'), f('Lunas! Selamat membaca, ya.', 'semangat')],
+  tokoGalat: [f('Hmm, ada yang belum pas. Cek lagi, ya.', 'kaget')],
+  tokoKunci: [f('Ebook ini digembok. Kuncinya ada di tombol beli.', 'kedip-nakal')],
+  tokoAdmin: [f('Rak toko diperbarui. Semoga laris, ya!', 'bangga')],
 }
 
 export const SEMUA_FRASA: Frasa[] = Object.values(FRASA).flat()

@@ -9,8 +9,11 @@ import { NalarProvider } from './components/nalar/NalarContext'
 import { Pojok } from './components/Pojok'
 import { useGerak } from './lib/gerak'
 import { mulaiStore, temaSaatIni, terapkanTema, useStoreSiap, useTemaGlobal } from './lib/store'
+import { mulaiToko, useToko } from './lib/toko/store'
+import { Akun } from './pages/Akun'
 import { Admin } from './pages/Admin'
 import { Home } from './pages/Home'
+import { Masuk } from './pages/Masuk'
 import { NotFound } from './pages/NotFound'
 import { Reader } from './pages/Reader'
 
@@ -48,6 +51,8 @@ function Rute() {
         <Route path="/" element={<Home />} />
         <Route path="/baca/:id" element={<Reader />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/masuk" element={<Masuk />} />
+        <Route path="/akun" element={<Akun />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {sapu > 0 && (
@@ -66,6 +71,7 @@ function Rute() {
 
 function Rangka() {
   const siap = useStoreSiap()
+  const tokoSiap = useToko().konfigSiap
   const gerak = useGerak()
   const [tema] = useTemaGlobal()
   const [cukupLama, setCukupLama] = useState(false)
@@ -82,7 +88,7 @@ function Rangka() {
     if (siap) terapkanTema(temaSaatIni())
   }, [siap])
 
-  const memuat = !(siap && cukupLama)
+  const memuat = !(siap && tokoSiap && cukupLama)
 
   return (
     <>
@@ -98,7 +104,7 @@ function Rangka() {
       </button>
       <Pojok />
       <main id="konten" tabIndex={-1} data-langit className="relative z-[2] min-h-screen outline-none">
-        {siap && <Rute />}
+        {siap && tokoSiap && <Rute />}
       </main>
       <FxLayer tema={tema} />
       <LoadingSwirl tampil={memuat} />
@@ -109,6 +115,7 @@ function Rangka() {
 export default function App() {
   useEffect(() => {
     void mulaiStore()
+    void mulaiToko()
   }, [])
   return (
     <HashRouter>

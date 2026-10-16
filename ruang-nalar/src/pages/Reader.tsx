@@ -4,6 +4,7 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { Ikon } from '../components/art/Ikon'
 import { Panel, type WarnaPanel } from '../components/art/Panel'
 import { Footer } from '../components/Footer'
+import { PintuToko } from '../components/toko/PintuToko'
 import { Nalar } from '../components/nalar/Nalar'
 import { useNalar } from '../components/nalar/NalarContext'
 import { BarKuas } from '../components/reader/BarKuas'
@@ -16,6 +17,7 @@ import { useGerak } from '../lib/gerak'
 import { penulisTampil, useEbook, useLencana } from '../lib/library'
 import { cariPara } from '../lib/parser'
 import { K, useKv } from '../lib/store'
+import { useToko } from '../lib/toko/store'
 import { TEMA, type Kulit } from '../lib/tema'
 import type { Ebook, PosisiBaca, TemaId } from '../lib/types'
 import { NotFound } from './NotFound'
@@ -488,6 +490,16 @@ function ReaderIsi({ ebook }: { ebook: Ebook }) {
 export function Reader() {
   const { id } = useParams()
   const ebook = useEbook(id)
+  const tk = useToko()
+  // ebook berbayar belum tentu sudah termuat (katalog diambil dari server): jangan buru-buru bilang "tidak ketemu"
+  if (!ebook && tk.mode !== 'mati' && (tk.katalogStatus === 'belum' || tk.katalogStatus === 'memuat')) {
+    return (
+      <div className="wadah grid min-h-[70vh] place-items-center pt-24" role="status">
+        <p className="font-display text-xl font-bold">Memuat ebook…</p>
+      </div>
+    )
+  }
+  if (ebook && ebook.sumber === 'toko' && ebook.terkunci) return <PintuToko ebook={ebook} />
   if (!ebook) return <NotFound judul="Ebook tidak ketemu" pesan="Mungkin ebooknya sudah dihapus, atau alamatnya salah ketik." />
   return (
     <DataBacaProvider ebookId={ebook.id}>

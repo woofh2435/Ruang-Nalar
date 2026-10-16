@@ -36,3 +36,27 @@ export const PLACEHOLDER_PENULIS = '[NAMA PENULIS]'
 /** Teks petunjuk di halaman admin (persis sesuai permintaan). */
 export const PETUNJUK_ADMIN =
   'Ebook yang kamu tambah di sini tersimpan di browser ini saja. Untuk dipublikasikan ke semua pembaca, unduh .md lalu taruh di src/content/'
+
+// ============================================================
+//  AKUN & EBOOK BERBAYAR (opsional) — lihat README bagian "Akun & pembayaran"
+// ============================================================
+
+/**
+ * Alamat proyek Supabase-mu, mis. "https://abcdefgh.supabase.co".
+ * Kosongkan untuk MEMATIKAN fitur akun & pembayaran (web berjalan seperti biasa).
+ */
+export const SUPABASE_URL = ''
+
+/**
+ * Kunci "anon / publishable" Supabase. Kunci ini MEMANG publik (aman ada di kode web),
+ * karena keamanan data dijaga Row Level Security di database.
+ * JANGAN PERNAH menaruh kunci "service_role" atau Server Key Midtrans di file ini atau di mana pun di repo.
+ */
+export const SUPABASE_ANON_KEY = ''
+
+/**
+ * true = tampilkan toko versi DEMO (akun & pembayaran palsu di browser, tanpa uang sungguhan).
+ * Hanya untuk mencoba. Biarkan false di web yang dipublikasikan.
+ * (Saat dijalankan di komputer lewat `npm run dev` / `npm run preview`, mode demo otomatis menyala.)
+ */
+export const TOKO_DEMO = false
