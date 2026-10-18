@@ -54,6 +54,8 @@ export type KodeGalat =
   | 'bukan_admin'
   | 'server_belum_diatur'
   | 'ditolak'
+  | 'sandi_sama'
+  | 'tautan_kedaluwarsa'
   | 'lainnya'
 
 export class GalatToko extends Error {
@@ -63,6 +65,18 @@ export class GalatToko extends Error {
     this.name = 'GalatToko'
     this.kode = kode
   }
+}
+
+/** Tautan dari email Supabase (pemulihan sandi, konfirmasi akun) yang sudah dibaca dari alamat web. */
+export type JenisTautan = 'pemulihan' | 'konfirmasi' | 'lainnya'
+export interface TautanAuth {
+  jenis: JenisTautan
+  accessToken: string
+  refreshToken: string
+}
+/** Hasil meminta atur ulang sandi. Hanya mode demo yang mengisi `tautanDemo` (pengganti email sungguhan). */
+export interface HasilReset {
+  tautanDemo?: TautanAuth
 }
 
 export interface MasukanEbookToko {
@@ -78,6 +92,12 @@ export interface Backend {
   daftar(email: string, sandi: string): Promise<{ perluKonfirmasi: boolean }>
   masuk(email: string, sandi: string): Promise<void>
   keluar(): Promise<void>
+  /** Kirim email atur ulang sandi. Hasilnya sama untuk email terdaftar maupun tidak (mencegah orang menebak email pengguna). */
+  kirimResetSandi(email: string): Promise<HasilReset>
+  /** Tukar token dari tautan email menjadi sesi masuk. */
+  pulihkanDariTautan(t: TautanAuth): Promise<void>
+  /** Ganti sandi akun yang sedang masuk. */
+  ubahSandi(sandiBaru: string): Promise<void>
   katalog(): Promise<ItemKatalog[]>
   pembelianSaya(): Promise<Pembelian[]>
   /** isi mentah (.md); null bila belum berhak */

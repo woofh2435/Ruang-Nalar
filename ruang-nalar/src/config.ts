@@ -60,3 +60,19 @@ export const SUPABASE_ANON_KEY = ''
  * (Saat dijalankan di komputer lewat `npm run dev` / `npm run preview`, mode demo otomatis menyala.)
  */
 export const TOKO_DEMO = false
+
+// ============================================================
+//  PROFIL SITUS (halaman "About Me" di dasbor dan area klien)
+// ============================================================
+// Semua nilai di bawah BISA DITIMPA tanpa membangun ulang web: tambahkan kunci TENTANG_PEMBUAT, KONTAK_EMAIL, dan
+// TAUTAN ke file toko-config.json (lihat README). Isi di sini hanya nilai bawaan.
+
+/** Cerita singkat tentang pembuat / platform (maks. 1200 karakter). */
+export const TENTANG_PEMBUAT =
+  'Ruang Nalar lahir dari catatan kuliah Sosiologi yang ditulis sendiri, lalu dirapikan menjadi ebook interaktif supaya lebih enak dibaca, disorot, dan diuji.'
+
+/** Email untuk dihubungi. Kosongkan bila tidak ingin menampilkan. */
+export const KONTAK_EMAIL = ''
+
+/** Tautan kontak / media sosial, mis. [{ label: 'Instagram', url: 'https://instagram.com/akunmu' }]. Hanya https. */
+export const TAUTAN_KONTAK: { label: string; url: string }[] = []

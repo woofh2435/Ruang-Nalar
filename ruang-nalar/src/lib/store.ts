@@ -55,6 +55,12 @@ export const K = {
   selesai: (id: string) => `selesai:${id}`,
   kuis: (id: string) => `kuis:${id}`,
   refleksi: (id: string) => `refleksi:${id}`,
+  /** daftar id ebook yang disimpan ke rak pribadi / ditandai favorit (dasbor) */
+  rak: 'rakPribadi',
+  favorit: 'ebookFavorit',
+  /** pilihan musik latar */
+  musik: 'musikLatar',
+  volumeMusik: 'musikVolume',
 }
 const AWALAN_DATA_BACA = ['pos', 'sorot', 'catatan', 'penanda', 'selesai', 'kuis', 'refleksi']
 
@@ -95,6 +101,11 @@ export function useKv<T>(kunci: string, awal: T): [T, (n: T | ((p: T) => T)) => 
     [kunci],
   )
   return [nilai, set]
+}
+
+/** Seluruh isi kv (dibaca-saja). Dipakai dasbor untuk merangkum data baca dari banyak ebook sekaligus. */
+export function useKvSemua(): Record<string, unknown> {
+  return useSyncExternalStore(subscribe, () => state.kv, () => state.kv)
 }
 
 export function useStoreSiap(): boolean {

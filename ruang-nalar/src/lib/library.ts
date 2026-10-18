@@ -28,6 +28,10 @@ export const EBOOK_PUBLIK: Ebook[] = Object.entries(modulMd)
     parsed: parseEbook(raw),
   }))
 
+/** Ebook untuk "Coba Gratis": yang bertag "percobaan" bila ada, kalau tidak ebook publik terbit yang pertama. */
+export const EBOOK_PERCOBAAN: Ebook | undefined =
+  EBOOK_PUBLIK.find((e) => e.parsed.meta.status === 'terbit' && e.parsed.meta.tag.some((t) => t.toLowerCase() === 'percobaan')) ?? EBOOK_PUBLIK.find((e) => e.parsed.meta.status === 'terbit')
+
 const cacheLokal = new WeakMap<CatatanEbookLokal, Ebook>()
 export function ebookDariCatatan(rec: CatatanEbookLokal): Ebook {
   let e = cacheLokal.get(rec)

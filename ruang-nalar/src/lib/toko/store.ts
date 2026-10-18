@@ -4,12 +4,13 @@
 import { useMemo, useSyncExternalStore } from 'react'
 import { SUPABASE_ANON_KEY, SUPABASE_URL, TOKO_DEMO } from '../../config'
 import { parseEbook } from '../parser'
+import { PROFIL_BAWAAN, gabungProfil, setProfil } from '../profil'
 import type { Ebook, EbookMeta } from '../types'
 import { buatBackendDemo } from './demo'
 import { bacaKonfig } from './konfig'
 import { tentukanMode, type ModeToko } from './mode'
 import { buatBackendSupabase, petaGalat } from './supabase'
-import { GalatToko, type Backend, type HasilBayar, type ItemKatalog, type MasukanEbookToko, type Pembelian, type Sesi } from './tipe'
+import { GalatToko, type Backend, type HasilBayar, type HasilReset, type ItemKatalog, type MasukanEbookToko, type Pembelian, type Sesi, type TautanAuth } from './tipe'
 
 export type StatusMuat = 'belum' | 'memuat' | 'siap' | 'galat'
 export type StatusIsi = 'memuat' | 'siap' | 'tidak_berhak' | 'galat'
@@ -96,6 +97,9 @@ export interface Toko {
   daftar(email: string, sandi: string): Promise<{ perluKonfirmasi: boolean }>
   masuk(email: string, sandi: string): Promise<void>
   keluar(): Promise<void>
+  kirimResetSandi(email: string): Promise<HasilReset>
+  pulihkanDariTautan(t: TautanAuth): Promise<void>
+  ubahSandi(sandiBaru: string): Promise<void>
   beli(ebookId: string): Promise<HasilBayar>
   adminMuat(): Promise<void>
   adminSimpan(m: MasukanEbookToko): Promise<void>
@@ -231,6 +235,31 @@ export function buatToko(beAwal: Backend | null, modeAwal: ModeToko, opsi: { kon
         terapkanSesi(null)
       }
     },
+    async kirimResetSandi(email) {
+      const b = wajib()
+      try {
+        return await b.kirimResetSandi(email)
+      } catch (e) {
+        throw bungkus(e)
+      }
+    },
+    async pulihkanDariTautan(t) {
+      const b = wajib()
+      try {
+        await b.pulihkanDariTautan(t)
+        terapkanSesi(await b.sesiSaatIni())
+      } catch (e) {
+        throw bungkus(e)
+      }
+    },
+    async ubahSandi(sandiBaru) {
+      const b = wajib()
+      try {
+        await b.ubahSandi(sandiBaru)
+      } catch (e) {
+        throw bungkus(e)
+      }
+    },
     async beli(ebookId) {
       const b = wajib()
       try {
@@ -311,8 +340,9 @@ export function mulaiToko(): Promise<void> {
     const t = ambilToko()
     berjalan = (async () => {
       const host = typeof location !== 'undefined' ? location.hostname : ''
-      const { konfig, peringatan } = await bacaKonfig({ url: SUPABASE_URL, kunci: SUPABASE_ANON_KEY, demo: TOKO_DEMO })
+      const { konfig, peringatan, mentah } = await bacaKonfig({ url: SUPABASE_URL, kunci: SUPABASE_ANON_KEY, demo: TOKO_DEMO })
       for (const p of peringatan) console.error('[Ruang Nalar] ' + p)
+      setProfil(gabungProfil(PROFIL_BAWAAN, mentah))
       const mode = tentukanMode(konfig.url, konfig.kunci, konfig.demo, host)
       const be = mode === 'nyata' ? buatBackendSupabase(konfig.url, konfig.kunci) : mode === 'demo' ? buatBackendDemo() : null
       t.pasang(be, mode)

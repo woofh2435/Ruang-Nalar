@@ -195,6 +195,33 @@ export function buatBackendDemo(): Backend {
       disk.hapus(KUNCI_SESI)
       kabar()
     },
+    async kirimResetSandi(email) {
+      await jeda()
+      const e = email.trim().toLowerCase()
+      if (!emailValid(e)) throw new GalatToko('email_tidak_valid', 'Alamat email belum benar.')
+      const u = muat().pengguna.find((p) => p.email === e)
+      // di demo tidak ada email sungguhan: berikan "tautan" palsu hanya bila akunnya ada
+      return u ? { tautanDemo: { jenis: 'pemulihan', accessToken: 'demo:' + u.id, refreshToken: 'demo' } } : {}
+    },
+    async pulihkanDariTautan(t) {
+      await jeda()
+      const id = t.accessToken.startsWith('demo:') ? t.accessToken.slice(5) : ''
+      const u = muat().pengguna.find((p) => p.id === id)
+      if (!u) throw new GalatToko('tautan_kedaluwarsa', 'Tautan sudah kedaluwarsa atau sudah pernah dipakai. Minta tautan baru, ya.')
+      disk.simpan(KUNCI_SESI, u.id)
+      kabar()
+    },
+    async ubahSandi(sandiBaru) {
+      await jeda()
+      const s = wajibLogin()
+      if (sandiBaru.length < SANDI_MIN) throw new GalatToko('sandi_lemah', `Kata sandi minimal ${SANDI_MIN} karakter.`)
+      const d = muat()
+      const u = d.pengguna.find((p) => p.id === s.id)
+      if (!u) throw new GalatToko('belum_login', 'Kamu belum masuk.')
+      if (u.sandi === sandiBaru) throw new GalatToko('sandi_sama', 'Kata sandi baru harus berbeda dari yang lama.')
+      u.sandi = sandiBaru
+      tulis(d)
+    },
     async katalog() {
       await jeda()
       return salin(muat().katalog.filter((k) => k.terbit)).sort((a, b) => a.urutan - b.urutan)

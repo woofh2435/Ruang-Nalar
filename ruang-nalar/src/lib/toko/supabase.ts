@@ -15,6 +15,9 @@ export function petaGalat(e: unknown): GalatToko {
   if (/email not confirmed|email_not_confirmed/i.test(pesan + kodeApi)) return baris('email_belum_konfirmasi', 'Email belum dikonfirmasi. Cek kotak masuk (dan folder spam) lalu klik tautan konfirmasinya.')
   if (/password.*(at least|short|weak)|weak_password/i.test(pesan + kodeApi)) return baris('sandi_lemah', `Kata sandi terlalu lemah. Pakai minimal ${SANDI_MIN} karakter.`)
   if (/unable to validate email|invalid.*email|email_address_invalid/i.test(pesan + kodeApi)) return baris('email_tidak_valid', 'Alamat email belum benar.')
+  if (/same_password|different from the old password/i.test(pesan + kodeApi)) return baris('sandi_sama', 'Kata sandi baru harus berbeda dari yang lama.')
+  if (/otp_expired|token has expired|expired or is invalid|invalid refresh token|refresh_token_not_found/i.test(pesan + kodeApi)) return baris('tautan_kedaluwarsa', 'Tautan sudah kedaluwarsa atau sudah pernah dipakai. Minta tautan baru, ya.')
+  if (/auth session missing|session_not_found|not authenticated|jwt expired/i.test(pesan + kodeApi)) return baris('belum_login', 'Sesi habis. Buka lagi tautan dari emailmu, atau masuk dulu.')
   if (/rate limit|too many|over_.*_rate_limit|429/i.test(pesan + kodeApi)) return baris('terlalu_sering', 'Terlalu sering mencoba. Tunggu beberapa menit lalu coba lagi.')
   if (/failed to fetch|networkerror|network request failed|load failed|fetch/i.test(pesan)) return baris('jaringan', 'Tidak bisa terhubung ke server. Periksa koneksi internetmu.')
   if (/row-level security|permission denied|42501/i.test(pesan + kodeApi)) return baris('ditolak', 'Akses ditolak.')
@@ -97,6 +100,24 @@ export function buatBackendSupabase(url: string, kunci: string): Backend {
     },
     async keluar() {
       const { error } = await klien.auth.signOut()
+      if (error) lempar(error)
+    },
+    async kirimResetSandi(email) {
+      const e = email.trim().toLowerCase()
+      if (!emailValid(e)) throw new GalatToko('email_tidak_valid', 'Alamat email belum benar.')
+      // tujuan = alamat web ini (harus ada di Supabase → Authentication → URL Configuration → Redirect URLs / Site URL)
+      const tujuan = typeof location !== 'undefined' ? location.origin + location.pathname : undefined
+      const { error } = await klien.auth.resetPasswordForEmail(e, tujuan ? { redirectTo: tujuan } : undefined)
+      if (error) lempar(error)
+      return {}
+    },
+    async pulihkanDariTautan(t) {
+      const { error } = await klien.auth.setSession({ access_token: t.accessToken, refresh_token: t.refreshToken })
+      if (error) lempar(error)
+    },
+    async ubahSandi(sandiBaru) {
+      if (sandiBaru.length < SANDI_MIN) throw new GalatToko('sandi_lemah', `Kata sandi minimal ${SANDI_MIN} karakter.`)
+      const { error } = await klien.auth.updateUser({ password: sandiBaru })
       if (error) lempar(error)
     },
     async katalog() {

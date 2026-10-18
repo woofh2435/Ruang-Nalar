@@ -24,6 +24,7 @@ export type Kejadian =
   | 'temaLadang'
   | 'bunyiOn'
   | 'bunyiOff'
+  | 'musikPilih'
   | 'refleksi'
   | 'kartu'
   | 'rakKosong'
@@ -42,6 +43,8 @@ export type Kejadian =
   | 'tokoGalat'
   | 'tokoKunci'
   | 'tokoAdmin'
+  | 'sandiBaru'
+  | 'sandiKirim'
 
 export interface Frasa {
   t: string
@@ -126,6 +129,7 @@ export const FRASA: Record<Kejadian, Frasa[]> = {
   temaLadang: [f('Ladang matahari! Hangat banget.', 'semangat')],
   bunyiOn: [f('Musik langit dinyalakan. Syahdu ya.', 'senang')],
   bunyiOff: [f('Hening lagi. Tenang juga, kan.', 'ngantuk')],
+  musikPilih: [f('Lagu baru! Cocok buat fokus.', 'senang'), f('Pilihan bagus. Telingaku ikut goyang.', 'kedip-nakal'), f('Nada baru, semangat baru!', 'semangat')],
   refleksi: [f('Renungan disimpan. Pikiranmu dalam juga.', 'mikir')],
   kartu: [f('Kartunya dibalik! Ingat-ingat ya.', 'mikir')],
   rakKosong: [f('Rak masih kosong. Tambah ebook lewat Ruang Redaksi.', 'sedih')],
@@ -144,6 +148,8 @@ export const FRASA: Record<Kejadian, Frasa[]> = {
   tokoGalat: [f('Hmm, ada yang belum pas. Cek lagi, ya.', 'kaget')],
   tokoKunci: [f('Ebook ini digembok. Kuncinya ada di tombol beli.', 'kedip-nakal')],
   tokoAdmin: [f('Rak toko diperbarui. Semoga laris, ya!', 'bangga')],
+  sandiBaru: [f('Kata sandi baru tersimpan. Aman!', 'bangga')],
+  sandiKirim: [f('Tautannya meluncur ke emailmu. Cek ya!', 'senang')],
 }
 
 export const SEMUA_FRASA: Frasa[] = Object.values(FRASA).flat()

@@ -14,6 +14,8 @@ export interface HasilKonfig {
   konfig: KonfigToko
   /** peringatan ramah untuk pemilik web (ditulis ke konsol) */
   peringatan: string[]
+  /** isi mentah toko-config.json (untuk pengaturan lain, mis. profil situs); null bila tidak ada */
+  mentah?: unknown
 }
 
 /** Dekode payload JWT (tanpa verifikasi; hanya untuk mengenali kunci yang salah tempat). */
@@ -38,6 +40,20 @@ export function kunciAman(kunci: string): boolean {
   const p = payloadJwt(k)
   if (p && p.role === 'service_role') return false
   return true
+}
+
+/**
+ * Bagian depan alamat proyek. Orang sering menempel alamat API lengkap dari dashboard (mis. https://xxxx.supabase.co/rest/v1/).
+ * supabase-js menambahkan jalur /rest/v1, /auth/v1, dst. sendiri, jadi jalur itu dibuang, begitu juga garis miring di ujung.
+ */
+export function rapikanUrlSupabase(url: string): string {
+  try {
+    const u = new URL(url.trim())
+    const jalur = u.pathname.replace(/\/+$/, '').replace(/\/(rest|auth|functions|storage|realtime|graphql)\/v1(\/.*)?$/i, '')
+    return u.origin + jalur
+  } catch {
+    return url.trim()
+  }
 }
 
 export function urlSupabaseValid(url: string): boolean {
@@ -70,6 +86,13 @@ export function gabungKonfig(bawaan: KonfigToko, berkas: unknown): HasilKonfig {
     peringatan.push('SUPABASE_URL tidak valid (harus diawali https://). Fitur akun dimatikan.')
     url = ''
   }
+  if (url) {
+    const bersih = rapikanUrlSupabase(url)
+    if (bersih !== url.replace(/\/+$/, '')) {
+      peringatan.push(`SUPABASE_URL berisi alamat API lengkap. Yang dipakai hanya bagian depannya: ${bersih}. Sebaiknya isi file dengan alamat itu saja.`)
+    }
+    url = bersih
+  }
   if ((url && !kunci) || (!url && kunci)) {
     if (url || kunci) peringatan.push('SUPABASE_URL dan SUPABASE_ANON_KEY harus diisi keduanya. Fitur akun dimatikan.')
     url = ''
@@ -91,5 +114,6 @@ export async function bacaKonfig(bawaan: KonfigToko, ambil: typeof fetch = fetch
   } finally {
     if (timer) clearTimeout(timer)
   }
-  return gabungKonfig(bawaan, isi)
+  const hasil = gabungKonfig(bawaan, isi)
+  return { ...hasil, mentah: isi }
 }

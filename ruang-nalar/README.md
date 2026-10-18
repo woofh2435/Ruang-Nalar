@@ -176,7 +176,9 @@ Isi bab berikutnya.
 **Rak & tampilan**
 - Rak buku dengan sampul yang dibuat otomatis dari tema, ikon, dan judul (miring 3D saat disorot), lencana *Selesai Dibaca* dan *Kuis Sempurna*.
 - 2 tema web: **Malam Berbintang** dan **Ladang Matahari**. 5 tema warna sampul/ebook: malam, siang, iris, almond, api.
-- Elemen kreatif: kursor kuas (hanya perangkat dengan mouse), layar muat berbentuk pusaran, transisi sapuan kuas antarhalaman, klik/ketuk bintang di latar (percikan + komentar Nalar), hujan kelopak bunga matahari saat bab selesai, suara ambient WebAudio (**default mati**).
+- Elemen kreatif: kursor kuas (hanya perangkat dengan mouse), layar muat berbentuk pusaran, transisi sapuan kuas antarhalaman, klik/ketuk bintang di latar (percikan + komentar Nalar), hujan kelopak bunga matahari saat bab selesai, musik latar buatan WebAudio (**default mati**, bagian 10).
+- Beranda punya bagian "menjual": cerita Nalar, keunggulan, cara kerja, ajakan **Coba Gratis**, dan tanya-jawab. Semua klaimnya dicocokkan dengan fitur nyata di `tests/promosi.test.ts`.
+- Sampul tiap buku punya 5 komposisi berbeda (dipilih dari judul + id, jadi stabil), dan kepala bab di pembaca punya 5 gaya yang berganti antarbab (ada huruf awal besar di sebagian gaya).
 
 **Nalar si bunglon**
 - Gambar SVG, warna kulit mengikuti tema, mata kiri-kanan bergerak sendiri, ekor bergoyang, lidah menangkap kunang-kunang (ada poin).
@@ -192,6 +194,13 @@ Isi bab berikutnya.
 - Daftar/masuk dengan email + kata sandi, halaman *Akunku* berisi riwayat pembelian, dan ebook berbayar yang terkunci sampai lunas.
 - Bayar lewat Midtrans; isi ebook disimpan di server dan hanya dikirim ke pembeli yang sudah lunas.
 - Admin toko mengelola harga, status terbit, dan isi ebook dari Ruang Redaksi.
+- Lupa kata sandi dan ganti kata sandi (lewat tautan email). Tautan itu hanya bekerja kalau **Site URL** dan **Redirect URLs** di Supabase berisi alamat web ini (bagian 9.3).
+
+**Dasbor member, musik, dan tampilan klien (bagian 10)**
+- `/dasbor`: menu samping (hamburger di HP) berisi Ringkasan, Rak, Cari Ebook, Favorit, Riwayat Baca, Pembelian, Akun, Pengaturan Suara, About Me.
+- Pencarian dengan saringan tema, topik, dan akses (gratis/berbayar).
+- 5 pilihan musik latar (ambient, dua lo-fi, hujan, suara alam) dengan nyala/mati dan volume. Semuanya disintesis di browser, tanpa berkas audio.
+- `/klien`: ringkasan formal untuk peninjau, datar dan siap dicetak.
 
 **Aksesibilitas & performa**
 - Mobile-first (diuji di 375px dan 1440px, tanpa scroll horizontal), navigasi keyboard, "Lewati ke konten", `aria-label` di tombol ikon, teks alternatif untuk Nalar, kontras WCAG AA (dites otomatis di `tests/kontras.test.ts`).
@@ -210,19 +219,22 @@ ruang-nalar/
 │  ├─ content/                    ← ★ taruh ebook .md publik di sini
 │  ├─ config.ts                   ← ★ nama web, penulis, sandi admin
 │  ├─ App.tsx, main.tsx, index.css
-│  ├─ pages/                      ← Home (rak), Reader (baca), Admin (Ruang Redaksi), Masuk, Akun, NotFound
+│  ├─ pages/                      ← Home (rak), Reader (baca), Admin (Ruang Redaksi), Masuk, Akun, Klien, NotFound
+│  │  └─ dasbor/                  ← halaman di dalam /dasbor (Ringkasan, Rak, Cari, Favorit, Riwayat, Akun, Suara, Tentang)
 │  ├─ components/
 │  │  ├─ admin/                   ← gerbang sandi, daftar, editor, dialog konfirmasi
+│  │  ├─ dasbor/                  ← kerangka dasbor + menu samping, kisi ebook
+│  │  ├─ landing/                 ← bagian promosi beranda
 │  │  ├─ art/                     ← seni procedural SVG (bunga matahari, iris, pusaran, sampul, …)
 │  │  ├─ fx/                      ← kanvas bintang, kursor kuas/percikan/kelopak, sapuan, loading
 │  │  ├─ nalar/                   ← maskot Nalar (SVG, ekspresi, otak/mood)
-│  │  └─ reader/                  ← blok ebook, sorot, progres, data baca
-│  └─ lib/                        ← parser ebook, IndexedDB, penyimpanan, frasa Nalar, audio, tema, toko/ (akun & bayar)
+│  │  └─ reader/                  ← blok ebook, kepala bab, sorot, progres, data baca
+│  └─ lib/                        ← parser ebook, IndexedDB, penyimpanan, frasa Nalar, musik (musik.ts, penghasilMusik.ts, audio.ts), tema, sampul, toko/ (akun & bayar)
 ├─ supabase/                      ← (opsional) schema.sql + Edge Functions untuk akun & pembayaran
 │  ├─ schema.sql, functions/      ← tabel + aturan akses, buat-transaksi, midtrans-webhook
 │  ├─ dashboard/                  ← versi satu-berkas kedua fungsi, untuk ditempel di Dashboard Supabase
 │  └─ tests/edge_test.ts          ← uji Edge Function dengan Deno (Supabase & Midtrans tiruan)
-├─ tests/                         ← vitest (parser, frasa, kontras, lencana, toko, aturan RLS)
+├─ tests/                         ← vitest (parser, frasa, kontras, lencana, toko, aturan RLS, panduan toko, dasbor, musik, klaim promosi)
 ├─ index.html, vite.config.ts, tailwind.config.js, tsconfig.json
 └─ package.json, package-lock.json
 ```
@@ -233,7 +245,10 @@ ruang-nalar/
 
 - **Sandi admin bukan keamanan** (lihat bagian 4).
 - **Ebook dari admin hanya ada di satu browser** (IndexedDB). Ganti browser/perangkat atau hapus data situs = ebook itu hilang. Gunakan **Ekspor JSON** untuk cadangan, atau **Unduh .md** lalu taruh di `src/content/`.
-- Sorotan, catatan, penanda, jawaban kuis, dan posisi baca pembaca juga hanya tersimpan di browser masing-masing pembaca.
+- Sorotan, catatan, penanda, jawaban kuis, dan posisi baca pembaca juga hanya tersimpan di browser masing-masing pembaca. Rak pribadi, favorit, riwayat baca, dan pilihan musik di dasbor juga **per perangkat**: belum ada sinkronisasi antarperangkat, dan ini dikatakan terang-terangan di halaman beranda dan `/klien`.
+- Belum ada tombol pengajuan refund di web. Refund dilakukan manual lewat dashboard Midtrans.
+- Belum ada halaman Syarat & Ketentuan, Kebijakan Privasi, dan Kontak khusus. Kontak cukup diisi lewat `toko-config.json` (bagian 10). Pemeriksa pembayaran umumnya menilai kejelasan produk, harga, dan kontak penjual, jadi halaman semacam itu akan membantu kalau dibuat sebelum mengajukan aktivasi Production (syarat terbarunya cek di dokumentasi Midtrans).
+- Tidak ada DRM. Pembaca yang sudah membeli bisa menyalin teks yang tampil di layarnya.
 - Font (Fraunces, Lora, Caveat) dimuat dari Google Fonts, jadi butuh internet. Tanpa internet, tampilan tetap jalan memakai font serif bawaan.
 - Ikon sampul memakai emoji, sehingga bentuknya mengikuti perangkat pembaca.
 - Secara bawaan tidak ada backend, login, database, komentar, pembayaran, atau analitik. Akun & pembayaran hanya ada kalau kamu menyalakannya sendiri (bagian 9). Tidak ada komentar atau analitik sama sekali. Semua gambar dibuat dengan kode (SVG/Canvas), tanpa file gambar eksternal.
@@ -249,7 +264,9 @@ ruang-nalar/
 | Ebook baru dari admin tidak tampil di rak | Statusnya masih **Draf**. Ubah ke **Terbit**. |
 | Ebook di `src/content/` tidak muncul | Pastikan akhiran `.md`, ada frontmatter `judul:`, dan **status: terbit**. Cek halaman admin untuk peringatan. |
 | Kursor kuas tidak tampil | Memang hanya aktif di perangkat dengan mouse, dan tidak di mode ringan / reduced-motion. |
-| Suara tidak bunyi | Default mati. Klik ikon speaker di pojok kanan atas. Browser hanya mengizinkan suara setelah ada klik. |
+| Suara tidak bunyi | Default mati. Klik ikon speaker di pojok kanan atas, atau ikon not musik untuk memilih lagu. Browser hanya mengizinkan suara setelah ada klik. |
+| Tautan "lupa sandi" atau konfirmasi email membuka "Not found" | **Site URL** dan **Redirect URLs** di Supabase (*Authentication → URL Configuration*) belum berisi alamat web lengkap dengan nama repo (bagian 9.3). Email yang sudah terkirim tetap membawa tujuan lama, jadi kirim ulang. |
+| `/dasbor` langsung melempar ke halaman masuk | Memang begitu kalau toko aktif dan kamu belum masuk. Masuk dulu, lalu kamu diantar kembali ke dasbor. |
 | Tombol akun tidak muncul | Fitur toko mati karena `SUPABASE_URL`/`SUPABASE_ANON_KEY` kosong. Itu normal. Isi keduanya (bagian 9) atau coba demo lewat `npm run dev`. |
 | Setelah bayar, ebook masih terkunci | Cek halaman **Akunku**. Status berubah setelah Midtrans memanggil webhook (biasanya detik, transfer bank bisa menit). Kalau tetap *Menunggu*, periksa Notification URL di Midtrans dan log fungsi `midtrans-webhook` di Supabase. |
 | Tombol Beli bilang "belum siap" | Secret `MIDTRANS_SERVER_KEY` / `SITE_URL` belum diatur, atau fungsi belum di-deploy. Ulangi langkah 5 di bagian 9.3. |
@@ -279,6 +296,8 @@ Baca ebook ◀── tabel ebook_isi ◀── status "lunas" ◀── Edge Fun
 Yang dijaga di **server**, bukan di browser: isi ebook berbayar (tabel `ebook_isi`, dilindungi Row Level Security), harga, dan status lunas. Browser pembeli tidak bisa menulis tabel pembelian sama sekali.
 
 ### 9.3 Mengaktifkan versi sungguhan
+
+> **Panduan di dalam web:** langkah-langkah di bawah (plus pendaftaran Midtrans di 9.6) juga tersedia sebagai daftar centang di **Ruang Redaksi** (`#/admin`), bagian **Panduan membuka toko**, lengkap dengan tombol Salin untuk nama fungsi, nama secret, dan perintah SQL. Centangnya hanya pengingat yang tersimpan di browser.
 
 Semua langkah di bawah dikerjakan **olehmu** karena butuh akunmu sendiri. Sandbox (uji coba) Midtrans gratis dan tidak memakai uang sungguhan. Selalu uji di sandbox dulu.
 
@@ -319,7 +338,7 @@ Semua langkah di bawah dikerjakan **olehmu** karena butuh akunmu sendiri. Sandbo
    `ID_PROYEK` adalah bagian depan Project URL (`xxxx` di `https://xxxx.supabase.co`).
 
    **Server Key hanya boleh ada di secrets Supabase.** Jangan menaruhnya di `src/config.ts`, `toko-config.json`, di repo, atau di chat. Kalau sempat bocor, buat ulang di dashboard Midtrans.
-6. **Daftarkan webhook**: di dashboard Midtrans (Sandbox) cari *Settings → Configuration* (atau *Payment → Notification URL*, nama menu bisa berbeda) dan isi **Payment Notification URL** dengan
+6. **Daftarkan webhook**: di dashboard Midtrans (Sandbox) buka *Settings → Payment Settings* (di dokumentasi Midtrans lama bernama *Settings → Configuration*; nama menu bisa berubah) dan isi **Payment Notification URL** dengan
    `https://ID_PROYEK.supabase.co/functions/v1/midtrans-webhook`
 7. **Beri tahu web-mu alamat Supabase-nya.** Ada dua cara, pilih salah satu:
    - **Tanpa build ulang (paling mudah di GitHub):** edit file `toko-config.json` di samping `index.html` (di repo ini ada di `public/toko-config.json`; kalau kamu memakai versi satu-file, unggah file itu ke repo-mu di folder yang sama dengan `index.html`). Isinya:
@@ -332,10 +351,14 @@ Semua langkah di bawah dikerjakan **olehmu** karena butuh akunmu sendiri. Sandbo
      ```
    - **Lewat kode:** isi `SUPABASE_URL` dan `SUPABASE_ANON_KEY` di `src/config.ts` lalu build ulang. Nilai di `toko-config.json` (kalau tidak kosong) menimpa `src/config.ts`.
 
+   Isi `SUPABASE_URL` dengan **alamat depannya saja** (`https://xxxx.supabase.co`). Kalau kamu menempel alamat API lengkap (`…/rest/v1/`), web akan membuang bagian belakangnya sendiri dan menulis peringatan di konsol.
+
    Kunci "anon / publishable" memang publik (keamanan data dijaga RLS). **Jangan** memasukkan kunci `service_role` atau `sb_secret_...`; web akan menolak memakainya dan menulis peringatan di konsol browser, tetapi kalau sudah terlanjur terunggah ke repo publik, segera buat ulang kuncinya di Supabase.
 8. **Tayangkan ulang** kalau perlu (jika kamu hanya mengedit `toko-config.json` di GitHub, GitHub Pages akan memperbaruinya sendiri dalam beberapa menit; tekan refresh keras di browser bila masih lama).
-9. **Uji di sandbox**: login, jual satu ebook murah, beli dengan metode simulasi dari Midtrans (dokumentasi *Testing* mereka menjelaskan metode & simulatornya). Pastikan status di *Akunku* berubah ke **Lunas** dan ebook terbuka.
+9. **Uji di sandbox**: login, jual satu ebook murah, beli dengan metode simulasi dari Midtrans (dokumentasi *Testing* mereka menjelaskan metode & simulatornya). Pastikan status di *Akunku* berubah ke **Lunas** dan ebook terbuka. ⚠️ Selama Midtrans masih Sandbox, ebook yang berstatus *Terbit* bisa “dibeli” siapa pun yang tahu simulator Midtrans tanpa membayar. Karena itu pakai **ebook contoh** berisi pendek untuk uji ini, dan baru terbitkan isi aslinya setelah memakai kunci produksi (langkah 10).
 10. **Pindah ke produksi** setelah akun Midtrans produksimu disetujui: ganti `MIDTRANS_SERVER_KEY` dengan Server Key **produksi**, set `MIDTRANS_ENV=production` (ubah secret di Dashboard, atau jalankan `secrets set` lagi), dan isi Notification URL yang sama di dashboard **Production** (dashboard sandbox dan produksi terpisah). Urutan lengkapnya ada di **9.6**.
+
+**Isi Site URL dulu.** Web ini tidak menentukan alamat tujuan sendiri untuk tautan di email konfirmasi, jadi Supabase memakai *Site URL*-nya. Kalau masih bawaan atau salah, tautan di email membuka halaman "Not found" (padahal emailnya biasanya sudah terverifikasi; coba langsung masuk). Buka Supabase *Authentication → URL Configuration*, isi **Site URL** dengan alamat web persis seperti yang dibuka di browser (mis. `https://NAMAKAMU.github.io/ruang-nalar/`, nama repo harus ikut), tambahkan alamat yang sama di **Redirect URLs**, lalu Save. Email yang sudah terkirim tetap membawa tujuan lama, jadi daftar ulang atau kirim ulang. Kalau ada akun yang terlanjur tidak terkonfirmasi, jalankan di SQL Editor: `update auth.users set email_confirmed_at = now() where email = 'emailnya' and email_confirmed_at is null;`
 
 Pengaturan email: di Supabase *Authentication → Providers → Email*, kamu bisa mewajibkan konfirmasi email. Pengirim email bawaan Supabase dibatasi jumlahnya dan ditujukan untuk uji coba, jadi untuk pengguna sungguhan pasang SMTP sendiri atau matikan konfirmasi (dengan risiko orang bisa mendaftar memakai email yang salah ketik).
 
@@ -348,6 +371,7 @@ Buka **Ruang Redaksi** (`#/admin`), masuk kode sandi admin, lalu di bagian **Tok
 ### 9.5 Catatan jujur untuk fitur ini
 
 - **Belum diuji langsung ke Supabase dan Midtrans sungguhan** (lingkungan pengembangannya tidak punya akses ke keduanya). Yang sudah diuji: alur lengkap mode demo di browser (HP 375px & desktop), aturan akses database di Postgres tiruan (`tests/toko-rls.test.ts`), logika tanda tangan/status/jumlah, dan kedua Edge Function dijalankan di Deno sungguhan dengan Supabase & Midtrans tiruan (`supabase/tests/edge_test.ts`; jalankan dengan `npm run test:edge` bila Deno terpasang; versi `supabase/dashboard/` diuji dengan `EDGE_BUNDEL=1`). **Karena itu uji dulu di sandbox, dengan transaksi kecil, sebelum membuka toko.**
+- **Mode Sandbox itu terbuka untuk dikelabui**: selama `MIDTRANS_ENV=sandbox`, ebook yang Terbit bisa “dibeli” tanpa uang lewat simulator Midtrans. Jangan menaruh isi asli di toko sebelum pindah ke produksi.
 - Tidak ada DRM: pembeli yang sah bisa menyalin teks atau memfoto layar ebook yang dia beli, dan bisa membagikan sandi akunnya. Kontrol akses hanya mencegah orang yang **belum** membayar.
 - **Belum ada fitur "lupa kata sandi".** Untuk sementara pemilik web bisa mengatur ulang sandi pengguna di dashboard Supabase (*Authentication → Users*).
 - Belum ada tombol refund atau voucher. Kalau kamu mengembalikan uang pembeli lewat dashboard Midtrans, cabut aksesnya dengan SQL: `update public.pembelian set status = 'gagal' where order_id = 'ORDER-ID-DARI-AKUNKU';`
@@ -372,3 +396,61 @@ Buka **Ruang Redaksi** (`#/admin`), masuk kode sandi admin, lalu di bagian **Tok
 **Biaya (per transaksi sukses, tanpa biaya pasang/bulanan, menurut halaman harga Midtrans saat dibaca):** QRIS 0,7%, GoPay 2%, DANA 1,5%, ShopeePay 1,5% atau 2% (dua sumber Midtrans berbeda), transfer bank Rp 4.000 tetap. Sumbernya berbeda pendapat apakah PPN 11% sudah termasuk untuk QRIS/GoPay/ShopeePay, jadi cek tarif dan PPN-nya di dashboard sebelum menentukan harga. Tarif bisa berubah.
 
 **Pajak (bukan nasihat pajak):** untuk wajib pajak orang pribadi dengan peredaran bruto di bawah Rp 500 juta setahun, penghasilan usaha tidak dikenai PPh final UMKM; di atas itu 0,5% dari peredaran bruto (PP 55/2022; menurut pajak.go.id tetap berlaku setelah perubahan PP 20/2026). Cek kewajiban lapor SPT-mu ke DJP atau konsultan pajak.
+
+---
+
+## 10. Dasbor, musik latar, dan tampilan klien
+
+### 10.1 Rute baru
+
+| Alamat | Isi |
+| --- | --- |
+| `#/` | Beranda: hero, cerita Nalar, keunggulan, cara kerja, **Coba Gratis**, rak, tanya-jawab |
+| `#/dasbor` | Dasbor member (menu samping). Kalau toko aktif dan belum masuk, diantar ke halaman masuk lalu kembali ke dasbor |
+| `#/dasbor/rak`, `/cari`, `/favorit`, `/riwayat`, `/pembelian`, `/akun`, `/suara`, `/tentang` | Halaman di dalam dasbor. `/pembelian` hanya ada kalau toko aktif |
+| `#/klien` | Tampilan klien: ringkasan formal untuk peninjau, tanpa dekorasi, bisa dicetak |
+
+Pengunjung tanpa akun tetap bisa membaca semua ebook gratis. Akun hanya dibutuhkan untuk membeli ebook berbayar dan membuka dasbor.
+
+### 10.2 Mengisi "About Me" dan kontak tanpa build ulang
+
+Halaman **About Me** di dasbor dan bagian Kontak di `/klien` membaca tiga kunci opsional dari `toko-config.json` (edit di GitHub, ikon pensil, lalu Commit). Nilai yang kosong atau tidak valid diabaikan, dan hanya tautan `https` yang diterima.
+
+```json
+{
+  "SUPABASE_URL": "https://xxxx.supabase.co",
+  "SUPABASE_ANON_KEY": "sb_publishable_...",
+  "TOKO_DEMO": false,
+  "TENTANG_PEMBUAT": "Cerita singkat tentang kamu dan kenapa web ini dibuat (maksimal 1200 huruf).",
+  "KONTAK_EMAIL": "emailmu@contoh.com",
+  "TAUTAN": [
+    { "label": "Instagram", "url": "https://instagram.com/namamu" }
+  ]
+}
+```
+
+Bawaannya ada di `src/config.ts` (`TENTANG_PEMBUAT`, `KONTAK_EMAIL`, `TAUTAN_KONTAK`). Nama yang tampil sebagai pembuat adalah `NAMA_PENULIS_DEFAULT`, jadi **ganti dari "Pemilik Ruang Nalar"** dengan namamu.
+
+### 10.3 Lupa dan ganti kata sandi
+
+Halaman Masuk punya tautan *Lupa kata sandi*. Emailnya membawa tautan ke web ini, tempat pengguna mengisi sandi baru. Agar tautannya tidak berujung "Not found", isi **Site URL** dan **Redirect URLs** di Supabase dengan alamat web lengkap (bagian 9.3). Pengguna yang sudah masuk bisa mengganti sandi di *Dasbor → Akun*.
+
+### 10.4 Musik latar
+
+Ikon speaker di pojok kanan atas menyalakan atau mematikan musik, dan ikon not musik membuka pemilih lagu dan volume (juga ada di *Dasbor → Pengaturan Suara*). Pilihan tersimpan di browser.
+
+| Lagu | Jenis |
+| --- | --- |
+| Langit Berputar | ambient |
+| Kafe Malam (74 bpm) | lo-fi |
+| Senja Pelan (64 bpm) | lo-fi |
+| Hujan di Jendela | hujan |
+| Hutan dan Sungai | suara alam |
+
+- Semuanya **disintesis langsung di browser** dengan WebAudio, tanpa berkas mp3, jadi tidak menambah ukuran unduhan dan tidak ada soal hak cipta musik. Konsekuensinya, bunyinya sederhana dan terdengar sintetis. Kalau mau lagu rekaman asli, taruh berkas berlisensi jelas di `public/` dan sambungkan lewat `src/lib/audio.ts`.
+- Default **mati**. Browser baru mengizinkan suara setelah pengguna mengklik sesuatu.
+- Kenyaringan antarjenis sudah disamakan lewat ukur render offline (`PENYETARA` di `src/lib/musik.ts`, dijaga `tests/musik.test.ts`). Tetap dengarkan sendiri di HP dan earphone-mu, karena pengujian di sini hanya mengukur angka, bukan telinga.
+
+### 10.5 Sampul dan kepala bab
+
+Sampul dirancang dari judul dan id ebook (`src/lib/sampul.ts`): 5 komposisi, dengan sedikit pergeseran dan skala, jadi satu ebook selalu mendapat sampul yang sama. Kepala bab di pembaca (`src/lib/gayaBab.ts`) memakai 5 gaya (klasik, angka, pita, tengah, tepi) yang berganti antarbab, dan dua di antaranya memakai huruf awal besar. Tidak perlu mengatur apa pun di file `.md`.

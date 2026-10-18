@@ -8,14 +8,29 @@ import { StarField } from './components/fx/StarField'
 import { NalarProvider } from './components/nalar/NalarContext'
 import { Pojok } from './components/Pojok'
 import { useGerak } from './lib/gerak'
+import { terapkanPilihanMusik } from './lib/pilihanMusik'
 import { mulaiStore, temaSaatIni, terapkanTema, useStoreSiap, useTemaGlobal } from './lib/store'
 import { mulaiToko, useToko } from './lib/toko/store'
 import { Akun } from './pages/Akun'
+import { DasborLayout } from './components/dasbor/DasborLayout'
+import { AkunDasbor } from './pages/dasbor/AkunDasbor'
+import { Cari } from './pages/dasbor/Cari'
+import { Favorit } from './pages/dasbor/Favorit'
+import { Pembelian } from './pages/dasbor/Pembelian'
+import { Rak } from './pages/dasbor/Rak'
+import { Ringkasan } from './pages/dasbor/Ringkasan'
+import { Riwayat } from './pages/dasbor/Riwayat'
+import { Suara } from './pages/dasbor/Suara'
+import { Tentang } from './pages/dasbor/Tentang'
 import { Admin } from './pages/Admin'
 import { Home } from './pages/Home'
+import { Klien } from './pages/Klien'
+import { AturSandi } from './pages/AturSandi'
+import { LupaSandi } from './pages/LupaSandi'
 import { Masuk } from './pages/Masuk'
 import { NotFound } from './pages/NotFound'
 import { Reader } from './pages/Reader'
+import { TautanAkun } from './pages/TautanAkun'
 
 /** Halaman + transisi sapuan kuas saat berpindah halaman (hanya jika alamat/path berubah). */
 function Rute() {
@@ -53,6 +68,22 @@ function Rute() {
         <Route path="/admin" element={<Admin />} />
         <Route path="/masuk" element={<Masuk />} />
         <Route path="/akun" element={<Akun />} />
+        <Route path="/klien" element={<Klien />} />
+        <Route path="/dasbor" element={<DasborLayout />}>
+          <Route index element={<Ringkasan />} />
+          <Route path="rak" element={<Rak />} />
+          <Route path="cari" element={<Cari />} />
+          <Route path="favorit" element={<Favorit />} />
+          <Route path="riwayat" element={<Riwayat />} />
+          <Route path="pembelian" element={<Pembelian />} />
+          <Route path="akun" element={<AkunDasbor />} />
+          <Route path="suara" element={<Suara />} />
+          <Route path="tentang" element={<Tentang />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+        <Route path="/lupa-sandi" element={<LupaSandi />} />
+        <Route path="/atur-sandi" element={<AturSandi />} />
+        <Route path="/tautan" element={<TautanAkun />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {sapu > 0 && (
@@ -85,7 +116,10 @@ function Rangka() {
 
   // pasang tema tersimpan setelah data dimuat
   useEffect(() => {
-    if (siap) terapkanTema(temaSaatIni())
+    if (siap) {
+      terapkanTema(temaSaatIni())
+      terapkanPilihanMusik()
+    }
   }, [siap])
 
   const memuat = !(siap && tokoSiap && cukupLama)
