@@ -6,6 +6,7 @@ import { Footer } from '../components/Footer'
 import { Nalar } from '../components/nalar/Nalar'
 import { useNalar } from '../components/nalar/NalarContext'
 import { BannerDemo } from '../components/toko/BannerDemo'
+import { FormGantiSandi } from '../components/toko/FormGantiSandi'
 import { useTemaGlobal } from '../lib/store'
 import { kulitTemaGlobal } from '../lib/tema'
 import { ambilToko, useToko } from '../lib/toko/store'
@@ -26,7 +27,8 @@ const tanggal = (iso: string) => {
   return Number.isNaN(d.getTime()) ? '' : d.toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
 }
 
-export function Akun() {
+/** `tanpaKepala`: dipakai di dalam dasbor (kepala, ganti sandi, dan footer sudah disediakan halaman pembungkusnya). */
+export function Akun({ tanpaKepala = false }: { tanpaKepala?: boolean } = {}) {
   const tk = useToko()
   const toko = ambilToko()
   const lokasi = useLocation()
@@ -112,7 +114,8 @@ export function Akun() {
 
   return (
     <>
-      <div className="wadah pb-8 pt-20">
+      <div className={tanpaKepala ? '' : 'wadah pb-8 pt-20'}>
+        {!tanpaKepala && (
         <header className="mb-6 grid items-center gap-4 sm:grid-cols-[1fr_auto]">
           <Panel warna="kertas" miring={-0.6} className="px-5 py-5 sm:px-7">
             <p className="m-0 font-tangan text-2xl font-bold" style={{ color: '#8a3d00' }}>
@@ -149,6 +152,20 @@ export function Akun() {
             <Nalar kulit={kulitTemaGlobal(tema)} ukuran="besar" gelembung="atas" />
           </div>
         </header>
+        )}
+
+        {!tanpaKepala && (
+          <section aria-labelledby="judul-sandi" className="mb-10">
+            <details>
+              <summary id="judul-sandi" className="cursor-pointer font-display text-2xl font-black leading-tight" style={{ color: 'var(--teks)' }}>
+                Ganti kata sandi
+              </summary>
+              <Panel warna="kertas" className="mt-3 max-w-md px-5 py-5">
+                <FormGantiSandi />
+              </Panel>
+            </details>
+          </section>
+        )}
 
         <section aria-labelledby="judul-pembelian">
           <h2 id="judul-pembelian" className="m-0 font-display text-3xl font-black" style={{ color: 'var(--teks)' }}>
@@ -231,7 +248,7 @@ export function Akun() {
           </div>
         </section>
       </div>
-      <Footer />
+      {!tanpaKepala && <Footer />}
     </>
   )
 }

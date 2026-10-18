@@ -7,8 +7,14 @@ export function Footer() {
       <p className="m-0">
         {NAMA_WEB} · catatan kuliah oleh {NAMA_PENULIS_DEFAULT}
       </p>
-      <p className="m-0 mt-1">
-        <Link to="/admin" className="underline underline-offset-4" style={{ color: 'var(--teks)' }}>
+      <p className="m-0 mt-1 flex flex-wrap justify-center gap-x-5 gap-y-1">
+        <Link to="/dasbor" className="inline-flex min-h-[44px] items-center underline underline-offset-4" style={{ color: 'var(--teks)' }}>
+          Dasbor
+        </Link>
+        <Link to="/klien" className="inline-flex min-h-[44px] items-center underline underline-offset-4" style={{ color: 'var(--teks)' }}>
+          Untuk peninjau
+        </Link>
+        <Link to="/admin" className="inline-flex min-h-[44px] items-center underline underline-offset-4" style={{ color: 'var(--teks)' }}>
           Ruang Redaksi
         </Link>
       </p>

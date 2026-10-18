@@ -298,7 +298,8 @@ export function BlokView({ blok }: { blok: Blok }): ReactNode {
 }
 
 /** Seluruh isi satu bab. Kartu balik berurutan dikelompokkan dalam satu grid. */
-export function IsiBab({ bab }: { bab: Bab }) {
+/** `inisial`: huruf pertama paragraf pembuka dibuat besar (hanya bila blok pertama bab memang paragraf biasa). */
+export function IsiBab({ bab, inisial = false }: { bab: Bab; inisial?: boolean }) {
   const out: ReactNode[] = []
   let i = 0
   while (i < bab.blok.length) {
@@ -321,5 +322,6 @@ export function IsiBab({ bab }: { bab: Bab }) {
     out.push(<BlokView key={b.id} blok={b} />)
     i++
   }
-  return <div className="flex flex-col gap-5">{out}</div>
+  const hurufBesar = inisial && bab.blok[0]?.tipe === 'p'
+  return <div className={`flex flex-col gap-5 ${hurufBesar ? 'baca-inisial' : ''}`}>{out}</div>
 }

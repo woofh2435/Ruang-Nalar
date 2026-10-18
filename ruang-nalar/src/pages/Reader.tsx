@@ -4,6 +4,9 @@ import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { Ikon } from '../components/art/Ikon'
 import { Panel, type WarnaPanel } from '../components/art/Panel'
 import { Footer } from '../components/Footer'
+import { TombolKoleksi } from '../components/dasbor/TombolKoleksi'
+import { KepalaBab } from '../components/reader/KepalaBab'
+import { AjakanLanjut } from '../components/landing/AjakanLanjut'
 import { PintuToko } from '../components/toko/PintuToko'
 import { Nalar } from '../components/nalar/Nalar'
 import { useNalar } from '../components/nalar/NalarContext'
@@ -13,6 +16,8 @@ import { IsiBab } from '../components/reader/Blok'
 import { SorotToolbar } from '../components/reader/SorotToolbar'
 import { NAMA_WEB } from '../config'
 import { fx } from '../lib/fxbus'
+import { GAYA_INISIAL, gayaBab } from '../lib/gayaBab'
+import { UKURAN_HURUF } from '../lib/huruf'
 import { useGerak } from '../lib/gerak'
 import { penulisTampil, useEbook, useLencana } from '../lib/library'
 import { cariPara } from '../lib/parser'
@@ -22,7 +27,6 @@ import { TEMA, type Kulit } from '../lib/tema'
 import type { Ebook, PosisiBaca, TemaId } from '../lib/types'
 import { NotFound } from './NotFound'
 
-const UKURAN_HURUF = [15, 16, 17, 18, 20, 22, 24, 26]
 const WARNA_PANEL: Record<TemaId, WarnaPanel> = { malam: 'malam', siang: 'kuning', iris: 'ungu', almond: 'biru', api: 'jingga' }
 const WARNA_BAR: Record<TemaId, [string, string, string]> = {
   malam: ['#2f4ba2', '#f6d24b', '#f26a1b'],
@@ -114,6 +118,7 @@ function ReaderIsi({ ebook }: { ebook: Ebook }) {
   const judulRef = useRef<HTMLHeadingElement>(null)
   const pewaktuSimpan = useRef<ReturnType<typeof setTimeout>>()
   const babSaatIni = bab[idx]
+  const gaya = gayaBab(ebook.id, idx)
 
   // judul tab browser
   useEffect(() => {
@@ -288,12 +293,17 @@ function ReaderIsi({ ebook }: { ebook: Ebook }) {
                 ))}
               </div>
             )}
+            {meta.status === 'terbit' && (
+              <div className="mt-3">
+                <TombolKoleksi ebookId={ebook.id} judul={meta.judul} />
+              </div>
+            )}
           </Panel>
         </header>
 
         {/* progress bar sapuan kuas (menempel di atas saat menggulir) */}
         <div
-          className="sticky top-0 z-30 -mx-4 mb-6 px-4 py-2 pr-[112px] backdrop-blur-sm md:-mx-8 md:px-8 md:pr-[120px]"
+          className="sticky top-[60px] z-30 -mx-4 mb-6 px-4 py-2 backdrop-blur-sm md:top-0 md:-mx-8 md:px-8 md:pr-[224px]"
           style={{ background: 'color-mix(in srgb, var(--latar-solid) 82%, transparent)' }}
         >
           <div className="flex items-center gap-3">
@@ -311,7 +321,7 @@ function ReaderIsi({ ebook }: { ebook: Ebook }) {
 
         <div className="grid items-start gap-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-8">
           {/* sidebar: daftar bab, penanda, ukuran huruf */}
-          <aside className="lg:sticky lg:top-20" aria-label="Navigasi ebook">
+          <aside className="lg:sticky lg:top-20 lg:-m-3 lg:max-h-[calc(100dvh-5rem)] lg:overflow-y-auto lg:p-3" aria-label="Navigasi ebook">
             <button
               type="button"
               className="tombol tombol-kecil w-full lg:hidden"
@@ -428,22 +438,12 @@ function ReaderIsi({ ebook }: { ebook: Ebook }) {
                 <div ref={artikel}>
                   <Panel as="article" warna="kertas" className="px-5 py-7 sm:px-10 sm:py-10 lg:pr-16" aria-labelledby={`judul-${babSaatIni.id}`}>
                     <div className="mx-auto max-w-[44rem]">
-                      <p className="m-0 font-tangan text-2xl font-bold" style={{ color: '#8a3d00' }}>
-                        bab {idx + 1} dari {n}
-                      </p>
-                      <h2
-                        id={`judul-${babSaatIni.id}`}
-                        ref={judulRef}
-                        tabIndex={-1}
-                        className="cat-judul mb-6 mt-0 font-display text-3xl font-black leading-tight outline-none sm:text-4xl"
-                      >
-                        {babSaatIni.judul}
-                      </h2>
+                      <KepalaBab gaya={gaya} nomor={idx + 1} total={n} judul={babSaatIni.judul} idJudul={`judul-${babSaatIni.id}`} judulRef={judulRef} tema={tema} />
                       <div className="baca" style={{ ['--ukuran-baca' as string]: `${UKURAN_HURUF[ukuranIdx]}px` }}>
                         {babSaatIni.blok.length === 0 ? (
                           <p style={{ color: 'var(--tinta-redup)' }}>Bab ini belum ada isinya.</p>
                         ) : (
-                          <IsiBab bab={babSaatIni} />
+                          <IsiBab bab={babSaatIni} inisial={GAYA_INISIAL.has(gaya)} />
                         )}
                       </div>
 
@@ -471,6 +471,7 @@ function ReaderIsi({ ebook }: { ebook: Ebook }) {
                           </Link>
                         )}
                       </nav>
+                      {idx === n - 1 && ebook.sumber === 'publik' && <AjakanLanjut />}
                     </div>
                   </Panel>
                 </div>

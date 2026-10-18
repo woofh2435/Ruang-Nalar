@@ -536,7 +536,7 @@ export function Editor({ id, onSelesai, onTema }: Props) {
         </div>
 
         {/* ---------- kolom pratinjau ---------- */}
-        <div id="panel-lihat" role="tabpanel" aria-labelledby="tab-lihat" className={`${tab === 'lihat' ? 'block' : 'hidden'} min-w-0 lg:sticky lg:top-6 lg:block`}>
+        <div id="panel-lihat" role="tabpanel" aria-labelledby="tab-lihat" className={`${tab === 'lihat' ? 'block' : 'hidden'} min-w-0 lg:block`}>
           <Panel warna="kertas" className="px-4 py-5 sm:px-6">
             <h3 className="m-0 font-display text-xl font-bold">Pratinjau langsung</h3>
             <div className="mt-3 flex items-start gap-4">

@@ -34,7 +34,7 @@ function CatatanTempel({ id }: { id: string }) {
   )
 
   return (
-    <div className="sticky mt-2 max-w-[34rem]" role="group" aria-label="Catatan tempel untuk paragraf ini">
+    <div className="catatan-tempel mt-2 max-w-[34rem]" role="group" aria-label="Catatan tempel untuk paragraf ini">
       <textarea
         ref={area}
         value={teks}

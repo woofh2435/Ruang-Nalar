@@ -17,7 +17,7 @@ type Tab = 'masuk' | 'daftar'
 export function Masuk() {
   const tk = useToko()
   const [params] = useSearchParams()
-  const lanjut = amanLanjut(params.get('lanjut'))
+  const lanjut = amanLanjut(params.get('lanjut'), '/dasbor')
   const [tab, setTab] = useState<Tab>(params.get('tab') === 'daftar' ? 'daftar' : 'masuk')
   const [email, setEmail] = useState('')
   const [sandi, setSandi] = useState('')
@@ -180,6 +180,13 @@ export function Masuk() {
               {daftar && (
                 <p id={idHint} className="m-0 mt-1 text-sm" style={{ color: 'var(--tinta-redup)' }}>
                   Minimal {SANDI_MIN} karakter. Pakai sandi yang tidak kamu pakai di tempat lain.
+                </p>
+              )}
+              {!daftar && (
+                <p className="m-0 mt-2 text-sm">
+                  <Link to="/lupa-sandi" className="inline-flex min-h-[36px] items-center font-semibold underline underline-offset-4" style={{ color: 'var(--tautan)' }}>
+                    Lupa kata sandi?
+                  </Link>
                 </p>
               )}
               <p id={idGalat} role="alert" className="m-0 mt-2 min-h-[1.5rem] font-semibold" style={{ color: '#7a1608' }}>

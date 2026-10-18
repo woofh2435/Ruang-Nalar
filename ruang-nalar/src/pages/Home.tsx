@@ -13,7 +13,8 @@ import { Nalar } from '../components/nalar/Nalar'
 import { useNalar } from '../components/nalar/NalarContext'
 import { NAMA_WEB, TAGLINE } from '../config'
 import { useGerak } from '../lib/gerak'
-import { useEbookTerbit } from '../lib/library'
+import { EBOOK_PERCOBAAN, useEbookTerbit } from '../lib/library'
+import { Promosi } from '../components/landing/Promosi'
 import { useTemaGlobal } from '../lib/store'
 import { kulitTemaGlobal } from '../lib/tema'
 import type { Ebook } from '../lib/types'
@@ -74,10 +75,16 @@ function Hero() {
           </h1>
           <p className="m-0 mt-3 text-lg leading-snug">{TAGLINE}. Disorot, dicatat, dan diuji bersama Nalar si bunglon.</p>
           <div className="mt-5 flex flex-wrap justify-center gap-3 lg:justify-start">
-            <button type="button" className="tombol tombol-primer" onClick={keRak}>
-              Lihat rak buku
+            {EBOOK_PERCOBAAN && (
+              <Link to={`/baca/${EBOOK_PERCOBAAN.id}`} className="tombol tombol-primer">
+                Coba Gratis
+              </Link>
+            )}
+            <button type="button" className={`tombol ${EBOOK_PERCOBAAN ? '' : 'tombol-primer'}`} onClick={keRak}>
+              Mulai Membaca
             </button>
           </div>
+          {EBOOK_PERCOBAAN && <p className="m-0 mt-3 text-sm">Tanpa daftar. Satu ebook percobaan langsung bisa kamu baca.</p>}
         </Panel>
 
         <Panel warna="malam" miring={3} className="absolute bottom-[1%] right-[1%] z-20 hidden w-[17%] p-1.5 lg:block">
@@ -152,6 +159,7 @@ export function Home() {
   return (
     <>
       <Hero />
+      <Promosi />
       <Rak daftar={daftar} />
       <Footer />
     </>
