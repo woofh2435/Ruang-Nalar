@@ -50,6 +50,24 @@ export type Blok =
       penjelasan: Para | null
     }
   | { tipe: 'refleksi'; id: string; paras: Para[] }
+  /** Misi (quest): tugas kecil dengan poin, centang selesai, catatan jawaban, dan "arah jawaban" yang bisa diintip. */
+  | { tipe: 'misi'; id: string; judul: string; xp: number; paras: Para[]; arah: Para | null }
+  /** Kartu "Jalur Karier" di dalam bab: bagaimana konsep bab dipakai di satu profesi. */
+  | { tipe: 'karier'; id: string; jalur: string; kunci: string; paras: Para[]; coba: Para | null }
+  /** Peta Karier: tabel jalur karier yang bisa ditandai minat, lengkap dengan progres bab modalnya. */
+  | { tipe: 'peta'; id: string; judul: string; jalur: JalurKarier[] }
+  /** Papan Pencapaian: ringkasan progres bab, misi, kuis, dan jalur karier yang ditandai. */
+  | { tipe: 'papan'; id: string; judul: string }
+
+export interface JalurKarier {
+  /** kunci penyimpanan, dari nama jalur */
+  kunci: string
+  nama: string
+  kerja: string
+  tempat: string
+  /** nomor bab (mulai 1) yang jadi modal jalur ini; kosong = seluruh bab */
+  bab: number[]
+}
 
 export interface Bab {
   id: string
@@ -127,6 +145,16 @@ export interface PosisiBaca {
   /** 0..1 posisi gulir di dalam bab */
   pct: number
   t: number
+}
+
+export interface DataMisi {
+  selesai: boolean
+  catatan: string
+}
+
+export interface DataKarier {
+  minat: boolean
+  langkah: string
 }
 
 export interface JawabanKuis {

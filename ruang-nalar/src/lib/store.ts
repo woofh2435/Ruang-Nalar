@@ -55,6 +55,9 @@ export const K = {
   selesai: (id: string) => `selesai:${id}`,
   kuis: (id: string) => `kuis:${id}`,
   refleksi: (id: string) => `refleksi:${id}`,
+  /** misi (quest) dan jalur karier yang ditandai, per ebook */
+  misi: (id: string) => `misi:${id}`,
+  karier: (id: string) => `karier:${id}`,
   /** daftar id ebook yang disimpan ke rak pribadi / ditandai favorit (dasbor) */
   rak: 'rakPribadi',
   favorit: 'ebookFavorit',
@@ -62,7 +65,7 @@ export const K = {
   musik: 'musikLatar',
   volumeMusik: 'musikVolume',
 }
-const AWALAN_DATA_BACA = ['pos', 'sorot', 'catatan', 'penanda', 'selesai', 'kuis', 'refleksi']
+const AWALAN_DATA_BACA = ['pos', 'sorot', 'catatan', 'penanda', 'selesai', 'kuis', 'refleksi', 'misi', 'karier']
 
 // ---------- kv ----------
 export function kvAmbil<T>(kunci: string, awal: T): T {

@@ -26,6 +26,8 @@ export type Kejadian =
   | 'bunyiOff'
   | 'musikPilih'
   | 'refleksi'
+  | 'misiSelesai'
+  | 'karierMinat'
   | 'kartu'
   | 'rakKosong'
   | 'adminMasuk'
@@ -131,6 +133,15 @@ export const FRASA: Record<Kejadian, Frasa[]> = {
   bunyiOff: [f('Hening lagi. Tenang juga, kan.', 'ngantuk')],
   musikPilih: [f('Lagu baru! Cocok buat fokus.', 'senang'), f('Pilihan bagus. Telingaku ikut goyang.', 'kedip-nakal'), f('Nada baru, semangat baru!', 'semangat')],
   refleksi: [f('Renungan disimpan. Pikiranmu dalam juga.', 'mikir')],
+  misiSelesai: [
+    f('Misi tuntas! Poinmu bertambah.', 'bangga'),
+    f('Satu misi lagi beres. Mantap!', 'senang'),
+    f('Pelan-pelan, kamu naik level nih.', 'semangat'),
+  ],
+  karierMinat: [
+    f('Jalur itu kucatat di petamu.', 'mikir'),
+    f('Menarik! Jalan masa depanmu mulai kebuka.', 'semangat'),
+  ],
   kartu: [f('Kartunya dibalik! Ingat-ingat ya.', 'mikir')],
   rakKosong: [f('Rak masih kosong. Tambah ebook lewat Ruang Redaksi.', 'sedih')],
   adminMasuk: [f('Selamat datang di Ruang Redaksi!', 'semangat')],

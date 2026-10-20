@@ -13,6 +13,10 @@
 //   :::kartu  (Depan: / Belakang:) ... :::
 //   :::kuis   (Q: / - opsi / - [x] benar / Penjelasan:) ... :::
 //   :::refleksi ... :::
+//   :::misi judul="..." xp=10 ... Arah: ... :::            (quest: centang, catatan, arah jawaban)
+//   :::karier jalur="Peneliti sosial" ... Coba: ... :::    (kartu jalur karier di dalam bab)
+//   :::peta-karier judul="..."  - Jalur | Dikerjakan | Tempat | bab 3, 5 ... :::
+//   :::papan judul="..." :::                                (ringkasan progres)
 // Tambahan kecil yang aman: "## " / "### " sebagai subjudul dan "- " sebagai daftar biasa.
 
 import { PLACEHOLDER_PENULIS } from '../config'
@@ -23,6 +27,7 @@ import type {
   CatatanTipe,
   EbookMeta,
   Inline,
+  JalurKarier,
   Para,
   ParsedEbook,
   Peringatan,
@@ -341,6 +346,29 @@ function kelompokParagraf(isi: Baris[]): { text: string; n: number }[] {
   return out
 }
 
+/** Kunci penyimpanan dari nama jalur karier: huruf kecil, angka, dan tanda hubung. */
+export function kunciJalur(nama: string): string {
+  return nama
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60)
+}
+
+/** "bab 3, 5-7" -> [3, 5, 6, 7]. Angka di luar 1..999 diabaikan; rentang dibatasi 60 bab. */
+export function nomorBabDariTeks(teks: string): number[] {
+  const hasil = new Set<number>()
+  for (const m of teks.matchAll(/(\d+)(?:\s*[-–]\s*(\d+))?/g)) {
+    const a = Number(m[1])
+    const z = m[2] !== undefined ? Number(m[2]) : a
+    if (a < 1 || z < a || z > 999 || z - a > 60) continue
+    for (let n = a; n <= z; n++) hasil.add(n)
+  }
+  return [...hasil].sort((x, y) => x - y)
+}
+
 function parseAtribut(s: string): Record<string, string> {
   const out: Record<string, string> = {}
   const re = /([A-Za-z_]+)\s*=\s*(?:"([^"]*)"|“([^”]*)”|'([^']*)'|(\S+))/g
@@ -560,10 +588,118 @@ function parseDalam(
         return { tipe: 'refleksi', id, paras: mkParas(id, isi) }
       }
 
+      case 'misi': {
+        if (kosongSemua) {
+          warn(baris, `Blok ${label} (baris ${baris}) kosong, dilewati.`)
+          return null
+        }
+        const tugas: Baris[] = []
+        let arah: Baris[] | null = null
+        for (const b of isi) {
+          const ma = /^\s*arah\s*:\s*(.*)$/i.exec(b.t)
+          if (ma) arah = [{ t: ma[1], n: b.n }]
+          else if (arah) {
+            if (b.t.trim()) arah.push(b)
+          } else tugas.push(b)
+        }
+        if (tugas.every((b) => !b.t.trim())) {
+          warn(baris, `Blok ${label} (baris ${baris}) belum punya tugas (teks sebelum "Arah:"). Blok dilewati.`)
+          return null
+        }
+        const judul = (atr.judul ?? '').trim()
+        if (!judul) warn(baris, `Blok ${label} (baris ${baris}) belum punya judul. Tulis :::misi judul="Misi 1: ..." xp=10. Dipakai "Misi".`)
+        let xp = 10
+        if (atr.xp !== undefined) {
+          const n = Number(atr.xp)
+          if (Number.isInteger(n) && n >= 1 && n <= 100) xp = n
+          else warn(baris, `Nilai xp "${atr.xp}" (baris ${baris}) tidak valid. Pakai bilangan bulat 1 sampai 100. Dipakai 10.`)
+        }
+        const id = idBlok()
+        const ta = arah ? arah.map((b) => b.t.trim()).filter(Boolean).join(' ') : ''
+        return {
+          tipe: 'misi',
+          id,
+          judul: judul || 'Misi',
+          xp,
+          paras: mkParas(id, tugas),
+          arah: ta ? mkPara(`${id}.a`, ta, arah![0].n) : null,
+        }
+      }
+
+      case 'karier': {
+        const jalur = (atr.jalur ?? '').trim()
+        if (!jalur) {
+          warn(baris, `Blok ${label} (baris ${baris}) belum punya nama jalur. Tulis :::karier jalur="Peneliti sosial". Blok dilewati.`)
+          return null
+        }
+        if (kosongSemua) {
+          warn(baris, `Blok ${label} untuk "${jalur}" (baris ${baris}) tidak punya isi, dilewati.`)
+          return null
+        }
+        const kunci = kunciJalur(jalur)
+        if (!kunci) {
+          warn(baris, `Nama jalur "${jalur}" (baris ${baris}) harus memuat huruf atau angka. Blok dilewati.`)
+          return null
+        }
+        const badan: Baris[] = []
+        let coba: Baris[] | null = null
+        for (const b of isi) {
+          const mc = /^\s*coba\s*:\s*(.*)$/i.exec(b.t)
+          if (mc) coba = [{ t: mc[1], n: b.n }]
+          else if (coba) {
+            if (b.t.trim()) coba.push(b)
+          } else badan.push(b)
+        }
+        if (badan.every((b) => !b.t.trim())) {
+          warn(baris, `Blok ${label} untuk "${jalur}" (baris ${baris}) belum punya penjelasan (teks sebelum "Coba:"). Blok dilewati.`)
+          return null
+        }
+        const id = idBlok()
+        const tc = coba ? coba.map((b) => b.t.trim()).filter(Boolean).join(' ') : ''
+        return { tipe: 'karier', id, jalur, kunci, paras: mkParas(id, badan), coba: tc ? mkPara(`${id}.c`, tc, coba![0].n) : null }
+      }
+
+      case 'peta-karier': {
+        const jalur: JalurKarier[] = []
+        const dipakai = new Set<string>()
+        for (const b of isi) {
+          const m = /^\s*[-*]\s+(.*)$/.exec(b.t)
+          if (!m) {
+            if (b.t.trim()) warn(b.n, `Baris ini di dalam ${label} (baris ${b.n}) diabaikan. Tulis tiap jalur sebagai "- Nama | Yang dikerjakan | Tempat kerja | bab 3, 5".`)
+            continue
+          }
+          const f = m[1].split('|').map((x) => x.trim())
+          if (f.length < 3 || !f[0] || !f[1] || !f[2]) {
+            warn(b.n, `Baris jalur di baris ${b.n} harus punya minimal tiga bagian dipisah "|": nama, yang dikerjakan, tempat kerja. Baris dilewati.`)
+            continue
+          }
+          const kunci = kunciJalur(f[0])
+          if (!kunci || dipakai.has(kunci)) {
+            warn(b.n, `Nama jalur "${f[0]}" di baris ${b.n} ${kunci ? 'sudah dipakai di peta ini' : 'harus memuat huruf atau angka'}. Baris dilewati.`)
+            continue
+          }
+          dipakai.add(kunci)
+          const bab = nomorBabDariTeks(f[3] ?? '')
+          jalur.push({ kunci, nama: f[0], kerja: f[1], tempat: f[2], bab })
+          if (jalur.length >= 20) break
+        }
+        if (jalur.length === 0) {
+          warn(baris, `Blok ${label} (baris ${baris}) belum punya jalur yang valid. Blok dilewati.`)
+          return null
+        }
+        const id = idBlok()
+        return { tipe: 'peta', id, judul: (atr.judul ?? '').trim() || 'Peta Jalur Kariermu', jalur }
+      }
+
+      case 'papan': {
+        const id = idBlok()
+        return { tipe: 'papan', id, judul: (atr.judul ?? '').trim() || 'Papan Pencapaian' }
+      }
+
       default:
         warn(
           baris,
-          `Jenis blok ":::${jenis}" (baris ${baris}) tidak dikenal, dilewati. Yang tersedia: catatan, tokoh, kartu, kuis, refleksi.`,
+          `Jenis blok ":::${jenis}" (baris ${baris}) tidak dikenal, dilewati. Yang tersedia: catatan, tokoh, kartu, kuis, refleksi, misi, karier, peta-karier, papan.`,
         )
         return null
     }
@@ -693,6 +829,8 @@ export function kumpulPara(bab: Bab): Para[] {
       case 'catatan':
       case 'tokoh':
       case 'refleksi':
+      case 'misi':
+      case 'karier':
         out.push(...b.paras)
         break
       default:

@@ -1,5 +1,6 @@
 // Pencarian dan penyaringan ebook di dasbor. Fungsi murni supaya mudah diuji.
 
+import { tagTampil } from './sampul'
 import { TEMA } from './tema'
 import type { Ebook, TemaId } from './types'
 
@@ -26,7 +27,7 @@ export function normal(s: string): string {
 
 const jerami = (e: Ebook): string => {
   const m = e.parsed.meta
-  return normal([m.judul, m.subjudul, m.penulis, m.deskripsi, m.tag.join(' '), TEMA[m.tema].nama].join(' '))
+  return normal([m.judul, m.subjudul, m.penulis, m.deskripsi, tagTampil(m.tag).join(' '), TEMA[m.tema].nama].join(' '))
 }
 
 /** Semua kata pencarian harus ada (urutan bebas). Pencarian kosong = semua cocok. */
@@ -52,7 +53,7 @@ export function cariEbook(daftar: readonly Ebook[], f: FilterCari): Ebook[] {
 export function semuaTag(daftar: readonly Ebook[]): string[] {
   const hitung = new Map<string, { teks: string; n: number }>()
   for (const e of daftar) {
-    for (const t of e.parsed.meta.tag) {
+    for (const t of tagTampil(e.parsed.meta.tag)) {
       const k = normal(t)
       if (!k) continue
       const ada = hitung.get(k)

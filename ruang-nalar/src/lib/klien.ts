@@ -4,6 +4,7 @@
 
 import { DAFTAR_MUSIK, JENIS_MUSIK } from './musik'
 import { normal } from './cari'
+import { tagTampil } from './sampul'
 import type { ModeToko } from './toko/mode'
 import type { Ebook } from './types'
 
@@ -34,7 +35,7 @@ export function statistikKonten(ebooks: readonly Ebook[]): StatistikKonten {
       }
     }
     tema.add(e.parsed.meta.tema)
-    for (const t of e.parsed.meta.tag) {
+    for (const t of tagTampil(e.parsed.meta.tag)) {
       const n = normal(t)
       if (n) topik.add(n)
     }

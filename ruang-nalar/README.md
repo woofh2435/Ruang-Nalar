@@ -154,6 +154,52 @@ Isi bab berikutnya.
 - Klaim yang belum pasti sebaiknya diberi tanda `[perlu dicek]`.
 - Contoh lengkap: `src/content/apa-itu-sosiologi.md`.
 
+### Blok interaktif: misi, jalur karier, peta karier, dan papan pencapaian
+
+Selain lima blok di atas, ada empat blok untuk ebook yang ingin mengajak pembaca **mengerjakan sesuatu** dan **melihat arah kariernya**. Semuanya tersimpan di browser pembaca (per ebook), dan blok yang salah format dilewati dengan peringatan nomor baris seperti blok lain.
+
+````markdown
+---
+judul: Judul Ebook Karier
+tema: siang
+tag: [karier, sampul-kolase]
+status: terbit
+---
+
+# Bab 1: Judul Bab
+
+:::misi judul="Misi 1: Judul misi" xp=10
+Tantangan yang dikerjakan pembaca di dunia nyata. Hasilnya ditulis di kotak catatan.
+Arah: Petunjuk jawaban yang baik. Disembunyikan sampai pembaca menekan tombol intip.
+:::
+
+:::karier jalur="Peneliti sosial"
+Satu-dua paragraf tentang pintu karier yang dibuka bab ini.
+Coba: Satu langkah kecil yang bisa dicoba minggu ini.
+:::
+
+# Bab 2: Peta dan papan
+
+:::peta-karier judul="Peta Jalur Karier"
+- Peneliti sosial | Merancang riset dan survei | Lembaga riset, LSM | bab 1, 2
+- Dosen | Mengajar dan meneliti | Kampus |
+:::
+
+:::papan judul="Papan Pencapaianmu"
+:::
+````
+
+| Blok | Fungsinya | Aturan |
+| --- | --- | --- |
+| `:::misi judul="…" xp=10` | Quest. Pembaca menulis jawaban di kotak catatan, boleh mengintip `Arah:`, lalu menandai selesai. | `xp` = poin misi (bawaan 10). `Arah:` opsional, ditulis di baris terakhir. |
+| `:::karier jalur="…"` | Kartu satu jalur karier yang dibuka bab itu. Pembaca bisa menandai minat dan menulis satu langkah konkret. | `jalur` dipakai sebagai kunci, jadi tulis nama yang **sama persis** di `peta-karier`. `Coba:` opsional. |
+| `:::peta-karier judul="…"` | Peta semua jalur: apa yang dikerjakan, contoh tempat kerja, dan bab yang menjadi modalnya. Batang progres tiap jalur ikut terisi dari bab yang sudah ditandai selesai. | Satu baris per jalur: `- Nama \| Dikerjakan \| Tempat kerja \| bab 3, 5-7`. Kolom bab boleh kosong (artinya semua bab bernomor) dan boleh memakai rentang. |
+| `:::papan judul="…"` | Papan pencapaian: poin, tingkat, bab selesai, misi selesai, kuis benar, dan jalur yang ditandai. | Badannya kosong. Boleh dipasang lebih dari sekali. |
+
+- **Poin**: misi sesuai `xp`, kuis +5 kalau benar di percobaan pertama, tiap bab yang ditandai selesai +10. Ada enam tingkat, dari *Maba Penasaran* sampai *Navigator Karier*.
+- **Judul bab harus berbentuk `# Bab 1: …`** kalau ebook memakai peta karier. Progres jalur dicocokkan ke bab lewat nomor di judul, bukan urutan, jadi bab pembuka seperti "Kata Pembuka" atau penutup seperti "Referensi" tidak menggeser hitungan.
+- Pratinjau di Ruang Redaksi menampilkan semua blok ini, tetapi tidak menyimpan apa pun.
+
 ---
 
 ## 4. Pengaturan penting (`src/config.ts`)
@@ -178,7 +224,7 @@ Isi bab berikutnya.
 - 2 tema web: **Malam Berbintang** dan **Ladang Matahari**. 5 tema warna sampul/ebook: malam, siang, iris, almond, api.
 - Elemen kreatif: kursor kuas (hanya perangkat dengan mouse), layar muat berbentuk pusaran, transisi sapuan kuas antarhalaman, klik/ketuk bintang di latar (percikan + komentar Nalar), hujan kelopak bunga matahari saat bab selesai, musik latar buatan WebAudio (**default mati**, bagian 10).
 - Beranda punya bagian "menjual": cerita Nalar, keunggulan, cara kerja, ajakan **Coba Gratis**, dan tanya-jawab. Semua klaimnya dicocokkan dengan fitur nyata di `tests/promosi.test.ts`.
-- Sampul tiap buku punya 5 komposisi berbeda (dipilih dari judul + id, jadi stabil), dan kepala bab di pembaca punya 5 gaya yang berganti antarbab (ada huruf awal besar di sebagian gaya).
+- Sampul tiap buku punya 5 komposisi berbeda (dipilih dari judul + id, jadi stabil), dan kepala bab di pembaca punya 5 gaya yang berganti antarbab (ada huruf awal besar di sebagian gaya). Ebook yang bertag `sampul-kolase` memakai sampul kolase bergaya poster Jepang 90-an (bagian 10.5).
 
 **Nalar si bunglon**
 - Gambar SVG, warna kulit mengikuti tema, mata kiri-kanan bergerak sendiri, ekor bergoyang, lidah menangkap kunang-kunang (ada poin).
@@ -189,6 +235,7 @@ Isi bab berikutnya.
 - Daftar bab, bilah progres kuas, bab sebelumnya/berikutnya, animasi balik halaman, ukuran huruf, **ingat posisi terakhir**.
 - Sorot teks 3 warna, catatan tempel, penanda paragraf, semuanya tersimpan di IndexedDB browser pembaca.
 - Blok interaktif: kuis, kartu balik, istilah (tooltip), kartu tokoh, refleksi, kotak catatan.
+- **Misi (quest) berpoin, jalur karier, peta karier, dan papan pencapaian** (tingkat *Maba Penasaran* sampai *Navigator Karier*), semuanya tersimpan per ebook di browser pembaca. Sintaksnya ada di bagian 3.
 
 **Akun & ebook berbayar (opsional, bagian 9)**
 - Daftar/masuk dengan email + kata sandi, halaman *Akunku* berisi riwayat pembelian, dan ebook berbayar yang terkunci sampai lunas.
@@ -225,11 +272,11 @@ ruang-nalar/
 │  │  ├─ admin/                   ← gerbang sandi, daftar, editor, dialog konfirmasi
 │  │  ├─ dasbor/                  ← kerangka dasbor + menu samping, kisi ebook
 │  │  ├─ landing/                 ← bagian promosi beranda
-│  │  ├─ art/                     ← seni procedural SVG (bunga matahari, iris, pusaran, sampul, …)
+│  │  ├─ art/                     ← seni procedural SVG (bunga matahari, iris, pusaran, sampul, sampul kolase + stiker Nalar, …)
 │  │  ├─ fx/                      ← kanvas bintang, kursor kuas/percikan/kelopak, sapuan, loading
 │  │  ├─ nalar/                   ← maskot Nalar (SVG, ekspresi, otak/mood)
-│  │  └─ reader/                  ← blok ebook, kepala bab, sorot, progres, data baca
-│  └─ lib/                        ← parser ebook, IndexedDB, penyimpanan, frasa Nalar, musik (musik.ts, penghasilMusik.ts, audio.ts), tema, sampul, toko/ (akun & bayar)
+│  │  └─ reader/                  ← blok ebook (termasuk misi, jalur karier, peta, papan di BlokKarier.tsx), kepala bab, sorot, progres, data baca
+│  └─ lib/                        ← parser ebook, IndexedDB, penyimpanan, frasa Nalar, musik (musik.ts, penghasilMusik.ts, audio.ts), tema, sampul (+ kanjiSampul.ts), papan.ts (poin & tingkat), toko/ (akun & bayar)
 ├─ supabase/                      ← (opsional) schema.sql + Edge Functions untuk akun & pembayaran
 │  ├─ schema.sql, functions/      ← tabel + aturan akses, buat-transaksi, midtrans-webhook
 │  ├─ dashboard/                  ← versi satu-berkas kedua fungsi, untuk ditempel di Dashboard Supabase
@@ -454,3 +501,26 @@ Ikon speaker di pojok kanan atas menyalakan atau mematikan musik, dan ikon not m
 ### 10.5 Sampul dan kepala bab
 
 Sampul dirancang dari judul dan id ebook (`src/lib/sampul.ts`): 5 komposisi, dengan sedikit pergeseran dan skala, jadi satu ebook selalu mendapat sampul yang sama. Kepala bab di pembaca (`src/lib/gayaBab.ts`) memakai 5 gaya (klasik, angka, pita, tengah, tepi) yang berganti antarbab, dan dua di antaranya memakai huruf awal besar. Tidak perlu mengatur apa pun di file `.md`.
+
+Ada satu sampul tambahan yang **tidak** ikut diacak: **kolase** (gaya tempel-guntingan poster Jepang 90-an, dengan stiker Nalar, kanji 進路 *shinro* = jalur/karier, dan 社会 *shakai* = masyarakat). Sampul ini hanya dipakai kalau frontmatter ebook memuat tag `sampul-kolase`:
+
+```
+tag: [sosiologi, karier, sampul-kolase]
+```
+
+Tag itu sengaja dipakai (bukan kolom baru) supaya gaya sampul ikut terbawa ke katalog toko tanpa mengubah skema Supabase. Tag yang berawalan `sampul-` tidak ditampilkan ke pembaca, tidak masuk filter tag, dan tidak ikut pencarian. Judul pada sampul dipecah otomatis jadi 1-3 baris huruf kapital; subjudul dipotong kalau lebih dari 34 huruf. Warna kulit Nalar mengikuti `tema`. Kanji ditanam sebagai bentuk SVG (huruf Noto Sans CJK JP Black, lisensi SIL OFL), jadi tampil sama di semua perangkat. Pilihan huruf judul `Montserrat` dimuat dari Google Fonts dan akan jatuh ke Arial Black kalau offline.
+
+---
+
+## 11. Ebook berbayar "Jalur Sosiologi": cara memasukkannya
+
+File `jalur-sosiologi.md` (dikirim terpisah, **bukan** di dalam proyek ini) adalah ebook berbayar lengkap: kata pembuka, 10 bab, 30 kuis, 46 kartu, 11 misi, 9 kartu jalur karier, peta sembilan jalur, dan dua papan pencapaian. Karena berbayar, isinya **tidak boleh** ditaruh di `src/content/` (folder itu publik, ikut terbuka di GitHub dan di build).
+
+1. Pastikan web sudah memakai versi terbaru dari proyek ini (blok misi, karier, peta, papan, dan sampul kolase ada di versi ini). Kalau memakai versi lama, blok baru akan dilewati dengan peringatan.
+2. Buka `…/#/admin`, masuk ke Ruang Redaksi, lalu ke bagian **Toko ebook berbayar** dan masuk sebagai admin toko.
+3. Klik **Ebook berbayar baru**, lalu **Ambil dari file .md** dan pilih `jalur-sosiologi.md`. Judul, subjudul, penulis, tema, ikon, tag, dan deskripsi diambil dari frontmatter. Di bawah kotak isi harus tertulis `Terbaca: Jalur Sosiologi · 15 bab · 30 kuis` **tanpa** peringatan format.
+4. Isi **harga** (bilangan bulat rupiah, minimal 1000), centang **Terbit**, lalu **Simpan ke toko**.
+5. **Jangan hapus tag `sampul-kolase`** dari baris `tag:` kalau kamu mengedit isinya. Tanpa tag itu sampul kembali ke gaya acak.
+6. Cek sebagai pembeli: keluar dari akun admin, lihat sampulnya di rak (terkunci), lalu beli dan baca. Di mode demo semuanya palsu; di mode sungguhan, uji dengan akun biasa dan Midtrans Sandbox dulu.
+
+Untuk mengubah isi buku nanti, buka lagi dari daftar toko (**Ubah**), lalu **Unduh .md**, edit, dan simpan kembali. Jangan menyalin isinya ke `src/content/`.
