@@ -1,5 +1,15 @@
 {
   "SUPABASE_URL": "https://xucvnocersgpspmfnfrm.supabase.co",
   "SUPABASE_ANON_KEY": "sb_publishable_r2d-dgEy5fW_vMUSlgOuDA_a5Q-sg6I",
-  "TOKO_DEMO": false
+  "TOKO_DEMO": false,
+  "TENTANG_PEMBUAT": "Halo, aku eko chan, mahasiswa sosiologi. Ruang Nalar dibuat dari satu ide sederhana: catatan kuliah seharusnya enak dibaca ulang dan bisa diajak main, bukan cuma menumpuk di folder. Karena itu isinya ebook interaktif dengan kuis kilat, kartu balik, jeda refleksi, dan misi kecil yang membawa teori sosiologi ke kehidupan sehari-hari.
+
+Di sini ada ebook gratis untuk lu coba, dan ebook berbayar seperti Jalur Sosiologi, panduan untuk mahasiswa baru dari kuliah sampai peta karier lulusan sosiologi. Semuanya ditulis dengan satu prinsip: belajar tidak harus terasa berat, dan sosiologi bukan sekadar hafalan, melainkan cara membaca dunia di sekitarmu.
+
+Kalau ada saran, salah ketik, atau materi yang ingin kamu minta, sampaikan lewat kontak di bawah. Selamat membaca, semoga jalurmu ketemu..",
+  "KONTAK_EMAIL": "ekopujiono2435",
+  "TAUTAN": [
+    { "label": "Instagram", "url": "https://instagram.com/usernamemu" },
+    { "label": "WhatsApp", "url": "https://wa.me/6281234567890" }
+  ]
 }
