@@ -13,9 +13,9 @@ import { EKSPRESI } from './ekspresi'
 import { useNalar } from './NalarContext'
 
 // ---------- geometri ----------
-const BADAN =
+export const BADAN =
   'M112 232 C100 170 140 112 205 108 C262 104 304 134 316 178 C326 218 300 262 256 272 C212 282 140 276 120 252 C115 246 113 240 112 232 Z'
-const PERUT =
+export const PERUT =
   'M112 244 C140 284 220 288 262 272 C296 258 316 226 320 194 C298 236 250 252 196 254 C160 256 128 252 112 244 Z'
 
 function bangunEkor() {
@@ -49,12 +49,12 @@ function bangunEkor() {
   const garis = 'M' + pts.map((p) => `${f1(p[0])} ${f1(p[1])}`).join('L')
   return { bentuk, garis, ujung: pts[N] }
 }
-const EKOR = bangunEkor()
+export const EKOR = bangunEkor()
 
 const PUNGGUNG: [number, number][] = [
   [120, 168], [130, 142], [148, 124], [172, 113], [200, 108], [228, 110], [254, 118], [276, 130],
 ]
-const DURI = PUNGGUNG.slice(0, -1)
+export const DURI = PUNGGUNG.slice(0, -1)
   .map((a, i) => {
     const b = PUNGGUNG[i + 1]
     const mx = (a[0] + b[0]) / 2
@@ -68,7 +68,7 @@ const DURI = PUNGGUNG.slice(0, -1)
   })
   .join(' ')
 
-const BINTIK: [number, number, number][] = [
+export const BINTIK: [number, number, number][] = [
   [150, 176, 14], [198, 144, 11], [236, 196, 16], [172, 226, 10], [128, 210, 7], [258, 152, 8], [214, 238, 7],
 ]
 

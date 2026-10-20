@@ -4,7 +4,7 @@
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 import { K, useKv } from '../../lib/store'
-import type { JawabanKuis, Sorotan, WarnaSorot } from '../../lib/types'
+import type { DataKarier, DataMisi, JawabanKuis, ParsedEbook, Sorotan, WarnaSorot } from '../../lib/types'
 
 export interface DataBaca {
   /** true = tersimpan di IndexedDB; false = hanya di memori (pratinjau admin) */
@@ -26,6 +26,14 @@ export interface DataBaca {
   setRefleksi: (id: string, teks: string) => void
   selesai: number[]
   tandaiSelesai: (bab: number) => void
+  /** misi (quest) per id blok */
+  misi: Record<string, DataMisi>
+  setMisi: (id: string, ubah: Partial<DataMisi>) => void
+  /** jalur karier yang ditandai, per kunci jalur */
+  karier: Record<string, DataKarier>
+  setKarier: (kunci: string, ubah: Partial<DataKarier>) => void
+  /** isi seluruh ebook, dipakai Papan Pencapaian dan Peta Karier untuk menghitung progres; null di pratinjau tanpa ebook */
+  ebook: ParsedEbook | null
 }
 
 const Ctx = createContext<DataBaca | null>(null)
@@ -45,7 +53,7 @@ function useData<T>(kunci: string, awal: T, persist: boolean): [T, (n: T | ((p: 
 
 const idBaru = () => 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
 
-export function DataBacaProvider({ ebookId, children }: { ebookId: string | null; children: ReactNode }) {
+export function DataBacaProvider({ ebookId, parsed = null, children }: { ebookId: string | null; parsed?: ParsedEbook | null; children: ReactNode }) {
   const persist = ebookId !== null
   const id = ebookId ?? '__pratinjau__'
 
@@ -55,6 +63,8 @@ export function DataBacaProvider({ ebookId, children }: { ebookId: string | null
   const [kuis, setKuis] = useData<Record<string, JawabanKuis>>(K.kuis(id), {}, persist)
   const [refleksi, setRefleksiMap] = useData<Record<string, string>>(K.refleksi(id), {}, persist)
   const [selesai, setSelesai] = useData<number[]>(K.selesai(id), [], persist)
+  const [misi, setMisiMap] = useData<Record<string, DataMisi>>(K.misi(id), {}, persist)
+  const [karier, setKarierMap] = useData<Record<string, DataKarier>>(K.karier(id), {}, persist)
   const [catatanTerbuka, setTerbuka] = useState<string[]>([])
 
   const tambahSorot = useCallback(
@@ -116,6 +126,29 @@ export function DataBacaProvider({ ebookId, children }: { ebookId: string | null
     [setSelesai],
   )
 
+  const setMisi = useCallback(
+    (mid: string, ubah: Partial<DataMisi>) =>
+      setMisiMap((p) => {
+        const baru: DataMisi = { ...{ selesai: false, catatan: '' }, ...p[mid], ...ubah } as DataMisi
+        const n = { ...p }
+        if (!baru.selesai && !baru.catatan.trim()) delete n[mid]
+        else n[mid] = baru
+        return n
+      }),
+    [setMisiMap],
+  )
+  const setKarier = useCallback(
+    (kunci: string, ubah: Partial<DataKarier>) =>
+      setKarierMap((p) => {
+        const baru: DataKarier = { ...{ minat: false, langkah: '' }, ...p[kunci], ...ubah } as DataKarier
+        const n = { ...p }
+        if (!baru.minat && !baru.langkah.trim()) delete n[kunci]
+        else n[kunci] = baru
+        return n
+      }),
+    [setKarierMap],
+  )
+
   const nilai = useMemo<DataBaca>(
     () => ({
       persist,
@@ -135,8 +168,13 @@ export function DataBacaProvider({ ebookId, children }: { ebookId: string | null
       setRefleksi,
       selesai,
       tandaiSelesai,
+      misi,
+      setMisi,
+      karier,
+      setKarier,
+      ebook: parsed,
     }),
-    [persist, sorotan, tambahSorot, hapusSorot, catatan, setCatatan, catatanTerbuka, bukaCatatan, penanda, togglePenanda, kuis, jawab, ulangiKuis, refleksi, setRefleksi, selesai, tandaiSelesai],
+    [persist, sorotan, tambahSorot, hapusSorot, catatan, setCatatan, catatanTerbuka, bukaCatatan, penanda, togglePenanda, kuis, jawab, ulangiKuis, refleksi, setRefleksi, selesai, tandaiSelesai, misi, setMisi, karier, setKarier, parsed],
   )
 
   return <Ctx.Provider value={nilai}>{children}</Ctx.Provider>

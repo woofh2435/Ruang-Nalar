@@ -4,6 +4,7 @@ import { hashBiji } from '../../lib/rng'
 import type { Bab, Blok, CatatanTipe } from '../../lib/types'
 import { Ikon, type NamaIkon } from '../art/Ikon'
 import { useNalar } from '../nalar/NalarContext'
+import { KartuKarier, Misi, PapanPencapaian, PetaKarier } from './BlokKarier'
 import { useDataBaca } from './DataBaca'
 import { ParaView } from './ParaView'
 import { TeksInline } from './TeksInline'
@@ -113,6 +114,7 @@ function Kuis({ blok }: { blok: BlokDari<'kuis'> }) {
   const d = useDataBaca()
   const { katakan } = useNalar()
   const idTanya = useId()
+  const idJudul = useId()
   const jawaban = d.kuis[blok.id]
   const sudah = !!jawaban && jawaban.pilih >= 0
   const idxBenar = blok.opsi.findIndex((o) => o.benar)
@@ -128,8 +130,8 @@ function Kuis({ blok }: { blok: BlokDari<'kuis'> }) {
   }
 
   return (
-    <section className="rounded-xl border-2 border-tinta bg-[#fff3d6] p-4 shadow-[4px_5px_0_rgba(8,12,40,0.25)]" aria-label="Kuis">
-      <p className="mb-1 flex items-center gap-2 font-display text-sm font-bold uppercase tracking-wide text-[#1c2b6b]">
+    <section className="rounded-xl border-2 border-tinta bg-[#fff3d6] p-4 shadow-[4px_5px_0_rgba(8,12,40,0.25)]" aria-labelledby={`${idJudul} ${idTanya}`}>
+      <p id={idJudul} className="mb-1 flex items-center gap-2 font-display text-sm font-bold uppercase tracking-wide text-[#1c2b6b]">
         <Ikon n="tanda" ukuran={18} />
         Kuis
       </p>
@@ -292,6 +294,14 @@ export function BlokView({ blok }: { blok: Blok }): ReactNode {
       return <Kuis blok={blok} />
     case 'refleksi':
       return <Refleksi blok={blok} />
+    case 'misi':
+      return <Misi blok={blok} />
+    case 'karier':
+      return <KartuKarier blok={blok} />
+    case 'peta':
+      return <PetaKarier blok={blok} />
+    case 'papan':
+      return <PapanPencapaian blok={blok} />
     default:
       return null
   }

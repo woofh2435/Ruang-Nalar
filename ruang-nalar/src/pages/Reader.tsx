@@ -21,6 +21,7 @@ import { UKURAN_HURUF } from '../lib/huruf'
 import { useGerak } from '../lib/gerak'
 import { penulisTampil, useEbook, useLencana } from '../lib/library'
 import { cariPara } from '../lib/parser'
+import { tagTampil } from '../lib/sampul'
 import { K, useKv } from '../lib/store'
 import { useToko } from '../lib/toko/store'
 import { TEMA, type Kulit } from '../lib/tema'
@@ -273,7 +274,7 @@ function ReaderIsi({ ebook }: { ebook: Ebook }) {
                 <p className="m-0 mt-1 text-sm italic">oleh {penulisTampil(ebook)}</p>
               </div>
             </div>
-            {(meta.status === 'draf' || lencana.selesaiDibaca || lencana.kuisSempurna || meta.tag.length > 0) && (
+            {(meta.status === 'draf' || lencana.selesaiDibaca || lencana.kuisSempurna || tagTampil(meta.tag).length > 0) && (
               <div className="mt-3 flex flex-wrap gap-2">
                 {meta.status === 'draf' && <span className="chip" style={{ background: 'var(--kertas)', color: 'var(--tinta)', borderColor: 'var(--tinta)' }}>Draf: hanya terlihat olehmu</span>}
                 {lencana.selesaiDibaca && (
@@ -286,7 +287,7 @@ function ReaderIsi({ ebook }: { ebook: Ebook }) {
                     <Ikon n="bintang" ukuran={12} tebal={2.5} /> Kuis Sempurna
                   </span>
                 )}
-                {meta.tag.map((t) => (
+                {tagTampil(meta.tag).map((t) => (
                   <span key={t} className="chip">
                     #{t}
                   </span>
@@ -503,7 +504,7 @@ export function Reader() {
   if (ebook && ebook.sumber === 'toko' && ebook.terkunci) return <PintuToko ebook={ebook} />
   if (!ebook) return <NotFound judul="Ebook tidak ketemu" pesan="Mungkin ebooknya sudah dihapus, atau alamatnya salah ketik." />
   return (
-    <DataBacaProvider ebookId={ebook.id}>
+    <DataBacaProvider ebookId={ebook.id} parsed={ebook.parsed}>
       <ReaderIsi key={ebook.id} ebook={ebook} />
     </DataBacaProvider>
   )

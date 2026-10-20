@@ -571,7 +571,7 @@ export function Editor({ id, onSelesai, onTema }: Props) {
 
             <div className="mt-4 max-h-none overflow-y-auto rounded-xl border-2 border-dashed border-tinta p-4 lg:max-h-[calc(100vh-18rem)]" style={{ background: '#fffdf7' }}>
               {babTampil ? (
-                <DataBacaProvider ebookId={null} key={babTampil.id}>
+                <DataBacaProvider ebookId={null} parsed={parsed} key={babTampil.id}>
                   <h4 className="m-0 mb-4 font-display text-2xl font-black">{babTampil.judul}</h4>
                   <div className="baca">
                     {babTampil.blok.length === 0 ? <p style={{ color: 'var(--tinta-redup)' }}>Bab ini belum ada isinya.</p> : <IsiBab bab={babTampil} />}

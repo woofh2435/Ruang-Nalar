@@ -14,6 +14,7 @@ import { Ikon } from './Ikon'
 import { Iris } from './Iris'
 import { MatahariApi } from './MatahariApi'
 import { Pusaran } from './Pusaran'
+import { SampulKolase } from './SampulKolase'
 import { RantingAlmond } from './RantingAlmond'
 
 // Sampul buku yang digenerate otomatis dari tema, ikon, dan judul ebook (tanpa gambar eksternal).
@@ -131,9 +132,9 @@ export function SampulGambar({ meta, id, className = '', paksa }: GambarProps) {
   const penulis = namaPenulis(meta.penulis, NAMA_PENULIS_DEFAULT)
   const contoh = meta.tag.some((x) => x.toLowerCase() === 'contoh')
   const r = useMemo(() => {
-    const dasar = rancangSampul(meta.judul, id)
+    const dasar = rancangSampul(meta.judul, id, meta.tag)
     return paksa ? { ...dasar, komposisi: paksa } : dasar
-  }, [meta.judul, id, paksa])
+  }, [meta.judul, id, meta.tag, paksa])
   const motif = (
     <Gerak r={r}>
       <Motif tema={meta.tema} seed={seed} />
@@ -142,6 +143,9 @@ export function SampulGambar({ meta, id, className = '', paksa }: GambarProps) {
 
   let isi: ReactNode
   switch (r.komposisi) {
+    case 'kolase':
+      isi = <SampulKolase meta={meta} penulis={penulis} />
+      break
     case 'bingkai':
       isi = (
         <>
