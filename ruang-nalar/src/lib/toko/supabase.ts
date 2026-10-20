@@ -18,6 +18,7 @@ export function petaGalat(e: unknown): GalatToko {
   if (/same_password|different from the old password/i.test(pesan + kodeApi)) return baris('sandi_sama', 'Kata sandi baru harus berbeda dari yang lama.')
   if (/otp_expired|token has expired|expired or is invalid|invalid refresh token|refresh_token_not_found/i.test(pesan + kodeApi)) return baris('tautan_kedaluwarsa', 'Tautan sudah kedaluwarsa atau sudah pernah dipakai. Minta tautan baru, ya.')
   if (/auth session missing|session_not_found|not authenticated|jwt expired/i.test(pesan + kodeApi)) return baris('belum_login', 'Sesi habis. Buka lagi tautan dari emailmu, atau masuk dulu.')
+  if (/over_email_send_rate_limit|email rate limit/i.test(pesan + kodeApi)) return baris('terlalu_sering', 'Batas pengiriman email sedang penuh karena terlalu banyak percobaan. Tunggu sekitar satu jam lalu coba lagi. Kalau emailmu sudah pernah dikonfirmasi, langsung saja masuk.')
   if (/rate limit|too many|over_.*_rate_limit|429/i.test(pesan + kodeApi)) return baris('terlalu_sering', 'Terlalu sering mencoba. Tunggu beberapa menit lalu coba lagi.')
   if (/failed to fetch|networkerror|network request failed|load failed|fetch/i.test(pesan)) return baris('jaringan', 'Tidak bisa terhubung ke server. Periksa koneksi internetmu.')
   if (/row-level security|permission denied|42501/i.test(pesan + kodeApi)) return baris('ditolak', 'Akses ditolak.')
@@ -88,7 +89,10 @@ export function buatBackendSupabase(url: string, kunci: string): Backend {
       const e = email.trim().toLowerCase()
       if (!emailValid(e)) throw new GalatToko('email_tidak_valid', 'Alamat email belum benar.')
       if (sandi.length < SANDI_MIN) throw new GalatToko('sandi_lemah', `Kata sandi minimal ${SANDI_MIN} karakter.`)
-      const { data, error } = await klien.auth.signUp({ email: e, password: sandi })
+      // tujuan tautan konfirmasi = alamat web ini (lengkap dengan nama repo). Harus ada di Supabase → Authentication → URL Configuration → Redirect URLs;
+      // kalau tidak ada di sana, Supabase memakai Site URL.
+      const tujuan = typeof location !== 'undefined' ? location.origin + location.pathname : undefined
+      const { data, error } = await klien.auth.signUp({ email: e, password: sandi, ...(tujuan ? { options: { emailRedirectTo: tujuan } } : {}) })
       if (error) lempar(error)
       // email sudah terdaftar tetapi dikonfirmasi: Supabase mengembalikan user tanpa identities (anti-enumerasi)
       if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) throw new GalatToko('email_terdaftar', 'Email ini sudah terdaftar. Coba masuk.')
