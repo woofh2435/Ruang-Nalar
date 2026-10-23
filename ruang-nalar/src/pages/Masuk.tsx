@@ -3,8 +3,11 @@ import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { Ikon } from '../components/art/Ikon'
 import { Panel } from '../components/art/Panel'
 import { BannerDemo } from '../components/toko/BannerDemo'
+import { PanelPersetujuan } from '../components/legal/PanelPersetujuan'
 import { Nalar } from '../components/nalar/Nalar'
 import { useNalar } from '../components/nalar/NalarContext'
+import { susunPersetujuanDaftar } from '../lib/persetujuan'
+import { useJudulHalaman } from '../lib/judul'
 import { EMAIL_ADMIN_DEMO } from '../lib/toko/demo'
 import { ambilToko, useToko } from '../lib/toko/store'
 import { amanLanjut, emailValid, GalatToko, SANDI_MIN } from '../lib/toko/tipe'
@@ -25,6 +28,8 @@ export function Masuk() {
   const [galat, setGalat] = useState('')
   const [sibuk, setSibuk] = useState(false)
   const [cekEmail, setCekEmail] = useState('')
+  const [setuju, setSetuju] = useState(false)
+  const [promo, setPromo] = useState(false)
   const [tema] = useTemaGlobal()
   const { katakan } = useNalar()
   const idEmail = useId()
@@ -32,6 +37,7 @@ export function Masuk() {
   const idGalat = useId()
   const idHint = useId()
   const refEmail = useRef<HTMLInputElement>(null)
+  useJudulHalaman(tab === 'daftar' ? 'Buat akun' : 'Masuk')
 
   useEffect(() => {
     refEmail.current?.focus()
@@ -64,6 +70,11 @@ export function Masuk() {
       katakan('tokoGalat')
       return
     }
+    if (daftar && !setuju) {
+      setGalat('Centang persetujuan dulu untuk membuat akun.')
+      katakan('daftarSyarat')
+      return
+    }
     if (!daftar && !sandi) {
       setGalat('Isi kata sandinya dulu, ya.')
       return
@@ -73,7 +84,7 @@ export function Masuk() {
     try {
       const toko = ambilToko()
       if (daftar) {
-        const h = await toko.daftar(em, sandi)
+        const h = await toko.daftar(em, sandi, susunPersetujuanDaftar(promo))
         if (h.perluKonfirmasi) setCekEmail(em)
         else katakan('tokoMasuk')
       } else {
@@ -189,11 +200,12 @@ export function Masuk() {
                   </Link>
                 </p>
               )}
+              {daftar && <PanelPersetujuan setuju={setuju} promo={promo} onSetuju={setSetuju} onPromo={setPromo} perluSetuju={!!galat && !setuju} />}
               <p id={idGalat} role="alert" className="m-0 mt-2 min-h-[1.5rem] font-semibold" style={{ color: '#7a1608' }}>
                 {galat}
               </p>
               <div className="mt-2 flex flex-wrap items-center gap-3">
-                <button type="submit" className="tombol tombol-primer" disabled={sibuk} aria-busy={sibuk}>
+                <button type="submit" className="tombol tombol-primer" disabled={sibuk || (daftar && !setuju)} aria-busy={sibuk}>
                   {sibuk ? 'Sebentar…' : daftar ? 'Buat akun' : 'Masuk'}
                 </button>
                 <Link to="/" className="tombol">

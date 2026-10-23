@@ -4,13 +4,14 @@
 import { useMemo, useSyncExternalStore } from 'react'
 import { SUPABASE_ANON_KEY, SUPABASE_URL, TOKO_DEMO } from '../../config'
 import { parseEbook } from '../parser'
+import { IDENTITAS_BAWAAN, gabungIdentitas, setIdentitas } from '../legal/identitas'
 import { PROFIL_BAWAAN, gabungProfil, setProfil } from '../profil'
 import type { Ebook, EbookMeta } from '../types'
 import { buatBackendDemo } from './demo'
 import { bacaKonfig } from './konfig'
 import { tentukanMode, type ModeToko } from './mode'
 import { buatBackendSupabase, petaGalat } from './supabase'
-import { GalatToko, type Backend, type HasilBayar, type HasilReset, type ItemKatalog, type MasukanEbookToko, type Pembelian, type Sesi, type TautanAuth } from './tipe'
+import { GalatToko, type Backend, type CatatanPersetujuan, type HasilBayar, type HasilReset, type ItemKatalog, type JenisPersetujuan, type MasukanEbookToko, type Pembelian, type PersetujuanDaftar, type Sesi, type TautanAuth } from './tipe'
 
 export type StatusMuat = 'belum' | 'memuat' | 'siap' | 'galat'
 export type StatusIsi = 'memuat' | 'siap' | 'tidak_berhak' | 'galat'
@@ -94,9 +95,12 @@ export interface Toko {
   muatKatalog(): Promise<void>
   muatPembelian(): Promise<void>
   muatIsi(ebookId: string): Promise<void>
-  daftar(email: string, sandi: string): Promise<{ perluKonfirmasi: boolean }>
+  daftar(email: string, sandi: string, persetujuan?: PersetujuanDaftar): Promise<{ perluKonfirmasi: boolean }>
   masuk(email: string, sandi: string): Promise<void>
   keluar(): Promise<void>
+  riwayatPersetujuan(): Promise<CatatanPersetujuan[]>
+  catatPersetujuan(jenis: JenisPersetujuan, status: boolean, versi: string): Promise<void>
+  hapusAkun(): Promise<void>
   kirimResetSandi(email: string): Promise<HasilReset>
   pulihkanDariTautan(t: TautanAuth): Promise<void>
   ubahSandi(sandiBaru: string): Promise<void>
@@ -205,10 +209,10 @@ export function buatToko(beAwal: Backend | null, modeAwal: ModeToko, opsi: { kon
         set({ isiStatus: { ...state.isiStatus, [ebookId]: 'galat' } })
       }
     },
-    async daftar(email, sandi) {
+    async daftar(email, sandi, persetujuan) {
       const b = wajib()
       try {
-        const h = await b.daftar(email, sandi)
+        const h = await b.daftar(email, sandi, persetujuan)
         if (!h.perluKonfirmasi) terapkanSesi(await b.sesiSaatIni())
         return h
       } catch (e) {
@@ -233,6 +237,37 @@ export function buatToko(beAwal: Backend | null, modeAwal: ModeToko, opsi: { kon
       } finally {
         // apa pun hasilnya, bersihkan data di layar ini
         terapkanSesi(null)
+      }
+    },
+    async riwayatPersetujuan() {
+      const b = wajib()
+      try {
+        return await b.riwayatPersetujuan()
+      } catch (e) {
+        throw bungkus(e)
+      }
+    },
+    async catatPersetujuan(jenis, status, versi) {
+      const b = wajib()
+      try {
+        await b.catatPersetujuan(jenis, status, versi)
+      } catch (e) {
+        throw bungkus(e)
+      }
+    },
+    async hapusAkun() {
+      const b = wajib()
+      try {
+        await b.hapusAkun()
+      } catch (e) {
+        throw bungkus(e)
+      } finally {
+        // akun sudah hilang (atau gagal): sinkronkan layar dengan keadaan sesi sebenarnya
+        try {
+          terapkanSesi(await b.sesiSaatIni())
+        } catch {
+          terapkanSesi(null)
+        }
       }
     },
     async kirimResetSandi(email) {
@@ -343,6 +378,7 @@ export function mulaiToko(): Promise<void> {
       const { konfig, peringatan, mentah } = await bacaKonfig({ url: SUPABASE_URL, kunci: SUPABASE_ANON_KEY, demo: TOKO_DEMO })
       for (const p of peringatan) console.error('[Ruang Nalar] ' + p)
       setProfil(gabungProfil(PROFIL_BAWAAN, mentah))
+      setIdentitas(gabungIdentitas(IDENTITAS_BAWAAN, mentah))
       const mode = tentukanMode(konfig.url, konfig.kunci, konfig.demo, host)
       const be = mode === 'nyata' ? buatBackendSupabase(konfig.url, konfig.kunci) : mode === 'demo' ? buatBackendDemo() : null
       t.pasang(be, mode)

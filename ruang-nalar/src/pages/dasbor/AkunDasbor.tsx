@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Ikon } from '../../components/art/Ikon'
 import { Panel } from '../../components/art/Panel'
 import { KepalaHalaman } from '../../components/dasbor/KepalaHalaman'
+import { PrivasiAkun } from '../../components/legal/PrivasiAkun'
 import { useNalar } from '../../components/nalar/NalarContext'
 import { BannerDemo } from '../../components/toko/BannerDemo'
 import { FormGantiSandi } from '../../components/toko/FormGantiSandi'
@@ -89,6 +90,10 @@ export function AkunDasbor() {
           </Panel>
         </Bagian>
       )}
+
+      <Bagian id="judul-privasi" judul="Privasi & persetujuan">
+        <PrivasiAkun />
+      </Bagian>
 
       <Bagian id="judul-tampilan" judul="Tampilan">
         <Panel warna="kertas" className="px-5 py-5">

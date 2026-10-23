@@ -6,6 +6,7 @@ import { LoadingSwirl } from './components/fx/LoadingSwirl'
 import { Sapuan } from './components/fx/Sapuan'
 import { StarField } from './components/fx/StarField'
 import { NalarProvider } from './components/nalar/NalarContext'
+import { BannerCookie } from './components/legal/BannerCookie'
 import { Pojok } from './components/Pojok'
 import { useGerak } from './lib/gerak'
 import { terapkanPilihanMusik } from './lib/pilihanMusik'
@@ -31,6 +32,8 @@ import { Masuk } from './pages/Masuk'
 import { NotFound } from './pages/NotFound'
 import { Reader } from './pages/Reader'
 import { TautanAkun } from './pages/TautanAkun'
+import { KebijakanPrivasi } from './pages/legal/KebijakanPrivasi'
+import { SyaratKetentuan } from './pages/legal/SyaratKetentuan'
 
 /** Halaman + transisi sapuan kuas saat berpindah halaman (hanya jika alamat/path berubah). */
 function Rute() {
@@ -69,6 +72,8 @@ function Rute() {
         <Route path="/masuk" element={<Masuk />} />
         <Route path="/akun" element={<Akun />} />
         <Route path="/klien" element={<Klien />} />
+        <Route path="/kebijakan-privasi" element={<KebijakanPrivasi />} />
+        <Route path="/syarat-ketentuan" element={<SyaratKetentuan />} />
         <Route path="/dasbor" element={<DasborLayout />}>
           <Route index element={<Ringkasan />} />
           <Route path="rak" element={<Rak />} />
@@ -140,6 +145,7 @@ function Rangka() {
       <main id="konten" tabIndex={-1} data-langit className="relative z-[2] min-h-screen outline-none">
         {siap && tokoSiap && <Rute />}
       </main>
+      {!memuat && <BannerCookie />}
       <FxLayer tema={tema} />
       <LoadingSwirl tampil={memuat} />
     </>

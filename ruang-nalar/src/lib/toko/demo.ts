@@ -1,7 +1,7 @@
 // Backend DEMO: seluruh alur akun & pembayaran berjalan di browser dengan data palsu.
 // TIDAK ada uang sungguhan, TIDAK aman (sandi disimpan apa adanya di browser ini). Hanya untuk mencoba tampilan.
 
-import { GalatToko, SANDI_MIN, emailValid, idEbookValid, type Backend, type ItemKatalog, type Pembelian, type Sesi } from './tipe'
+import { GalatToko, SANDI_MIN, emailValid, idEbookValid, type Backend, type CatatanPersetujuan, type ItemKatalog, type JenisPersetujuan, type Pembelian, type PersetujuanDaftar, type Sesi } from './tipe'
 
 export const EMAIL_ADMIN_DEMO = 'admin@demo.test'
 
@@ -17,6 +17,8 @@ interface DataDemo {
   katalog: ItemKatalog[]
   isi: Record<string, string>
   pembelian: PembelianDemo[]
+  /** log persetujuan; opsional supaya data demo lama (tanpa kolom ini) tetap terbaca */
+  persetujuan?: (CatatanPersetujuan & { dibuatOleh: string })[]
 }
 
 const ISI_CONTOH = `---
@@ -168,7 +170,7 @@ export function buatBackendDemo(): Backend {
       pendengar.add(cb)
       return () => pendengar.delete(cb)
     },
-    async daftar(email, sandi) {
+    async daftar(email, sandi, persetujuan?: PersetujuanDaftar) {
       await jeda()
       const e = email.trim().toLowerCase()
       if (!emailValid(e)) throw new GalatToko('email_tidak_valid', 'Alamat email belum benar.')
@@ -177,6 +179,11 @@ export function buatBackendDemo(): Backend {
       if (d.pengguna.some((p) => p.email === e)) throw new GalatToko('email_terdaftar', 'Email ini sudah terdaftar. Coba masuk.')
       const id = 'demo-' + Math.random().toString(36).slice(2, 10)
       d.pengguna.push({ id, email: e, sandi })
+      if (persetujuan) {
+        const waktu = new Date().toISOString()
+        const baris = (jenis: JenisPersetujuan, status: boolean) => ({ id: 'c-' + Math.random().toString(36).slice(2, 10), jenis, status, versi: persetujuan.versi, dibuat: waktu, dibuatOleh: id })
+        d.persetujuan = [...(d.persetujuan ?? []), baris('syarat_privasi', true), baris('promo', persetujuan.promo), baris('analitik', persetujuan.analitik)]
+      }
       tulis(d)
       disk.simpan(KUNCI_SESI, id)
       kabar()
@@ -221,6 +228,33 @@ export function buatBackendDemo(): Backend {
       if (u.sandi === sandiBaru) throw new GalatToko('sandi_sama', 'Kata sandi baru harus berbeda dari yang lama.')
       u.sandi = sandiBaru
       tulis(d)
+    },
+    async riwayatPersetujuan() {
+      await jeda()
+      const s = wajibLogin()
+      return (muat().persetujuan ?? [])
+        .filter((c) => c.dibuatOleh === s.id)
+        .map(({ dibuatOleh: _x, ...c }) => salin(c))
+        .reverse()
+    },
+    async catatPersetujuan(jenis, status, versi) {
+      await jeda()
+      const s = wajibLogin()
+      const d = muat()
+      d.persetujuan = [...(d.persetujuan ?? []), { id: 'c-' + Math.random().toString(36).slice(2, 10), jenis, status, versi: versi.slice(0, 20), dibuat: new Date().toISOString(), dibuatOleh: s.id }]
+      tulis(d)
+    },
+    async hapusAkun() {
+      await jeda()
+      const s = wajibLogin()
+      if (s.admin) throw new GalatToko('admin_tidak_bisa', 'Akun admin tidak bisa dihapus dari sini demi keamanan.')
+      const d = muat()
+      d.pengguna = d.pengguna.filter((p) => p.id !== s.id)
+      d.pembelian = d.pembelian.filter((p) => p.dibuatOleh !== s.id)
+      d.persetujuan = (d.persetujuan ?? []).filter((c) => c.dibuatOleh !== s.id)
+      tulis(d)
+      disk.hapus(KUNCI_SESI)
+      kabar()
     },
     async katalog() {
       await jeda()

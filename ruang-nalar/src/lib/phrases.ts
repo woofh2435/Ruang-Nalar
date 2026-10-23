@@ -47,6 +47,13 @@ export type Kejadian =
   | 'tokoAdmin'
   | 'sandiBaru'
   | 'sandiKirim'
+  | 'cookieTerima'
+  | 'cookieTolak'
+  | 'persetujuanSimpan'
+  | 'persetujuanTarik'
+  | 'daftarSyarat'
+  | 'dataUnduh'
+  | 'akunHapus'
 
 export interface Frasa {
   t: string
@@ -161,6 +168,13 @@ export const FRASA: Record<Kejadian, Frasa[]> = {
   tokoAdmin: [f('Rak toko diperbarui. Semoga laris, ya!', 'bangga')],
   sandiBaru: [f('Kata sandi baru tersimpan. Aman!', 'bangga')],
   sandiKirim: [f('Tautannya meluncur ke emailmu. Cek ya!', 'senang')],
+  cookieTerima: [f('Pilihanmu kucatat. Selamat menjelajah!', 'senang')],
+  cookieTolak: [f('Oke, hanya yang perlu saja. Aman!', 'bangga')],
+  persetujuanSimpan: [f('Pilihan privasimu sudah tersimpan.', 'bangga')],
+  persetujuanTarik: [f('Persetujuan ditarik. Kamu yang pegang kendali.', 'bangga')],
+  daftarSyarat: [f('Baca dulu, lalu centang kotaknya. Aku sabar.', 'mikir')],
+  dataUnduh: [f('Datamu sudah kuunduhkan. Simpan baik-baik.', 'senang')],
+  akunHapus: [f('Akunmu sudah dihapus. Terima kasih sudah mampir.', 'sedih')],
 }
 
 export const SEMUA_FRASA: Frasa[] = Object.values(FRASA).flat()

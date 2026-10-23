@@ -18,8 +18,21 @@ const bersama = readFileSync(join(fungsi, '_shared', 'midtrans.ts'), 'utf8')
   .replace(/^export /gm, '')
   .trim()
 
-for (const nama of ['buat-transaksi', 'midtrans-webhook']) {
+// hapus-akun tidak memakai kode bersama: versi dashboard-nya hanya diberi catatan di bagian atas.
+const TANPA_BERSAMA = new Set(['hapus-akun'])
+
+for (const nama of ['buat-transaksi', 'midtrans-webhook', 'hapus-akun']) {
   const sumber = readFileSync(join(fungsi, nama, 'index.ts'), 'utf8')
+  if (TANPA_BERSAMA.has(nama)) {
+    const atas = sumber.match(/^(\/\/[^\n]*\n)+/)?.[0] ?? ''
+    const hasil = `${atas}//
+// VERSI SATU-BERKAS untuk Dashboard Supabase (tidak memakai kode bersama, jadi isinya sama dengan supabase/functions/${nama}/index.ts).
+// Dibuat otomatis oleh scripts/bundel-fungsi.mjs. JANGAN diedit di sini; ubah sumbernya lalu jalankan ulang skripnya.
+${sumber.slice(atas.length)}`
+    writeFileSync(join(keluar, `${nama}.ts`), hasil)
+    console.log('dibuat: supabase/dashboard/' + nama + '.ts (' + hasil.length + ' karakter)')
+    continue
+  }
   if (!IMPOR_BERSAMA.test(sumber)) throw new Error(`${nama}: impor ../_shared/midtrans.ts tidak ditemukan`)
   if (!sumber.includes(IMPOR_KLIEN)) throw new Error(`${nama}: impor createClient tidak ditemukan`)
   const badan = sumber.replace(IMPOR_BERSAMA, '').replace(IMPOR_KLIEN, '').replace(/^\n+/, '')

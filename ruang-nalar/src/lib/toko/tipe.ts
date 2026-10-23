@@ -56,6 +56,7 @@ export type KodeGalat =
   | 'ditolak'
   | 'sandi_sama'
   | 'tautan_kedaluwarsa'
+  | 'admin_tidak_bisa'
   | 'lainnya'
 
 export class GalatToko extends Error {
@@ -79,6 +80,25 @@ export interface HasilReset {
   tautanDemo?: TautanAuth
 }
 
+/** Jenis persetujuan yang dicatat (UU PDP): wajib untuk akun, serta dua yang opsional. */
+export type JenisPersetujuan = 'syarat_privasi' | 'promo' | 'analitik'
+
+/** Pilihan pengguna yang dikirim saat mendaftar. `versi` = versi kebijakan yang ia baca dan setujui. */
+export interface PersetujuanDaftar {
+  versi: string
+  promo: boolean
+  analitik: boolean
+}
+
+/** Satu baris log persetujuan (hanya bertambah; menarik persetujuan = baris baru berstatus false). */
+export interface CatatanPersetujuan {
+  id: string
+  jenis: JenisPersetujuan
+  status: boolean
+  versi: string
+  dibuat: string
+}
+
 export interface MasukanEbookToko {
   item: Omit<ItemKatalog, 'urutan'> & { urutan?: number }
   raw: string
@@ -89,7 +109,8 @@ export interface Backend {
   sesiSaatIni(): Promise<Sesi | null>
   /** mengembalikan fungsi berhenti-mendengar */
   onSesi(cb: (s: Sesi | null) => void): () => void
-  daftar(email: string, sandi: string): Promise<{ perluKonfirmasi: boolean }>
+  /** `persetujuan` dikirim bersama pendaftaran dan dicatat server (log persetujuan). */
+  daftar(email: string, sandi: string, persetujuan?: PersetujuanDaftar): Promise<{ perluKonfirmasi: boolean }>
   masuk(email: string, sandi: string): Promise<void>
   keluar(): Promise<void>
   /** Kirim email atur ulang sandi. Hasilnya sama untuk email terdaftar maupun tidak (mencegah orang menebak email pengguna). */
@@ -98,6 +119,12 @@ export interface Backend {
   pulihkanDariTautan(t: TautanAuth): Promise<void>
   /** Ganti sandi akun yang sedang masuk. */
   ubahSandi(sandiBaru: string): Promise<void>
+  /** Log persetujuan milik akun yang sedang masuk (terbaru dulu). */
+  riwayatPersetujuan(): Promise<CatatanPersetujuan[]>
+  /** Tambah satu baris log persetujuan (mis. menarik persetujuan promo). */
+  catatPersetujuan(jenis: JenisPersetujuan, status: boolean, versi: string): Promise<void>
+  /** Hapus akun yang sedang masuk beserta datanya di server. */
+  hapusAkun(): Promise<void>
   katalog(): Promise<ItemKatalog[]>
   pembelianSaya(): Promise<Pembelian[]>
   /** isi mentah (.md); null bila belum berhak */

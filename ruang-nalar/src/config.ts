@@ -76,3 +76,17 @@ export const KONTAK_EMAIL = ''
 
 /** Tautan kontak / media sosial, mis. [{ label: 'Instagram', url: 'https://instagram.com/akunmu' }]. Hanya https. */
 export const TAUTAN_KONTAK: { label: string; url: string }[] = []
+
+// ============================================================
+//  IDENTITAS PENGELOLA WEB (tampil di Kebijakan Privasi dan Syarat & Ketentuan)
+// ============================================================
+// Nilai di bawah BISA DITIMPA lewat toko-config.json (kunci NAMA_PENGELOLA, KOTA_DOMISILI, TAHUN_HAK_CIPTA) tanpa membangun ulang web.
+
+/** Nama pengendali data / pemilik hak cipta yang ditulis di halaman hukum dan di notice hak cipta tiap bab. */
+export const NAMA_PENGELOLA = 'Eko Pujiono'
+
+/** Kota domisili pengelola, dipakai untuk klausul penyelesaian sengketa. Kosong = "pengadilan yang berwenang di Indonesia". */
+export const KOTA_DOMISILI = ''
+
+/** Tahun pertama ebook diterbitkan, untuk notice hak cipta: "© 2026 ...". */
+export const TAHUN_HAK_CIPTA = 2026

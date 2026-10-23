@@ -116,6 +116,11 @@ export const PANDUAN_TOKO: TahapPanduan[] = [
         judul: 'Uji beli satu ebook contoh',
         isi: 'Di bagian “Toko ebook berbayar” buat ebook CONTOH berharga murah (minimal Rp 1.000, isi pendek), centang Terbit. Beli dengan simulator Midtrans Sandbox. Pastikan statusnya berubah jadi Lunas di halaman Akunku dan ebook terbuka.',
       },
+      {
+        id: 'privasi-hukum',
+        judul: 'Pasang catatan persetujuan dan fitur hapus akun (UU PDP)',
+        isi: 'Kalau kamu menjalankan schema.sql terbaru, tabel catatan persetujuan sudah ikut terpasang. Kalau skemamu dijalankan sebelum fitur ini ada, jalankan sekali file supabase/patch/01-persetujuan.sql di SQL Editor (aman diulang). Tombol Hapus akun di halaman Akun butuh satu fungsi tambahan bernama hapus-akun: Edge Functions → Deploy a new function → Via Editor, isi dengan supabase/dashboard/hapus-akun.ts, lalu matikan Verify JWT (fungsi memeriksa tokennya sendiri). Secret SITE_URL yang sama sudah cukup. Tanpa fungsi ini, web tetap jalan dan tombolnya memberi tahu penggunanya untuk meminta hapus lewat email. Isi juga NAMA_PENGELOLA, KOTA_DOMISILI, dan KONTAK_EMAIL di toko-config.json supaya Kebijakan Privasi dan Syarat & Ketentuan memuat datamu yang benar.',
+      },
     ],
   },
   {

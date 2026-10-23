@@ -95,7 +95,7 @@ Di sini juga ada: edit, duplikat, hapus (dengan konfirmasi), atur urutan rak, **
 2. Simpan sebagai `src/content/nama-ebook.md`. Nama file jadi id/alamat ebook (`#/baca/nama-ebook`).
 3. Unggah/push ke GitHub. Workflow membangun ulang otomatis.
 
-Hapus `src/content/apa-itu-sosiologi.md` kalau contoh itu sudah tidak diperlukan.
+Ebook gratis bawaan adalah `src/content/ayok-kenali-sosiologi.md` (pengantar singkat tiga bab). Ganti atau hapus kalau tidak diperlukan. Ingat: isi `src/content/` ikut terbungkus saat build, jadi setelah mengubahnya web perlu dibuild ulang (otomatis lewat GitHub Actions, atau bangun `index.html` baru).
 
 ### Format ebook
 
@@ -152,7 +152,7 @@ Isi bab berikutnya.
 - Tandai satu pilihan benar di kuis dengan `- [x]`.
 - Blok yang salah format **tidak membuat web crash**: blok itu dilewati dan admin menampilkan peringatan dengan nomor barisnya.
 - Klaim yang belum pasti sebaiknya diberi tanda `[perlu dicek]`.
-- Contoh lengkap: `src/content/apa-itu-sosiologi.md`.
+- Contoh yang memakai semua jenis blok: `contoh/apa-itu-sosiologi.md` (di luar `src/content/`, jadi tidak tampil di rak; dipakai juga oleh tes parser). Contoh ebook biasa: `src/content/ayok-kenali-sosiologi.md`.
 
 ### Blok interaktif: misi, jalur karier, peta karier, dan papan pencapaian
 
@@ -278,7 +278,8 @@ ruang-nalar/
 │  │  └─ reader/                  ← blok ebook (termasuk misi, jalur karier, peta, papan di BlokKarier.tsx), kepala bab, sorot, progres, data baca
 │  └─ lib/                        ← parser ebook, IndexedDB, penyimpanan, frasa Nalar, musik (musik.ts, penghasilMusik.ts, audio.ts), tema, sampul (+ kanjiSampul.ts), papan.ts (poin & tingkat), toko/ (akun & bayar)
 ├─ supabase/                      ← (opsional) schema.sql + Edge Functions untuk akun & pembayaran
-│  ├─ schema.sql, functions/      ← tabel + aturan akses, buat-transaksi, midtrans-webhook
+│  ├─ schema.sql, functions/      ← tabel + aturan akses, buat-transaksi, midtrans-webhook, hapus-akun (opsional)
+│  ├─ patch/                      ← tambahan untuk database yang sudah berjalan (01-persetujuan.sql)
 │  ├─ dashboard/                  ← versi satu-berkas kedua fungsi, untuk ditempel di Dashboard Supabase
 │  └─ tests/edge_test.ts          ← uji Edge Function dengan Deno (Supabase & Midtrans tiruan)
 ├─ tests/                         ← vitest (parser, frasa, kontras, lencana, toko, aturan RLS, panduan toko, dasbor, musik, klaim promosi)
@@ -350,7 +351,7 @@ Yang dijaga di **server**, bukan di browser: isi ebook berbayar (tabel `ebook_is
 Semua langkah di bawah dikerjakan **olehmu** karena butuh akunmu sendiri. Sandbox (uji coba) Midtrans gratis dan tidak memakai uang sungguhan. Selalu uji di sandbox dulu.
 
 1. **Buat proyek Supabase** di [supabase.com](https://supabase.com) (paket gratis cukup untuk mulai). Pilih region terdekat (mis. Singapore). Simpan *Project URL* (`https://xxxx.supabase.co`) dan kunci **anon / publishable** dari halaman pengaturan API proyek. Nama menu bisa sedikit berubah.
-2. **Jalankan skema**: *SQL Editor → New query*, tempel seluruh isi `supabase/schema.sql`, klik **Run**. Aman dijalankan ulang.
+2. **Jalankan skema**: *SQL Editor → New query*, tempel seluruh isi `supabase/schema.sql`, klik **Run**. Aman dijalankan ulang. Kalau database-mu sudah berjalan dari skema versi lama, cukup jalankan file di `supabase/patch/` yang belum pernah kamu jalankan (lihat 10.6).
 3. **Jadikan dirimu admin toko**: pertama punya akun dulu, boleh lewat tombol akun di web-mu (setelah langkah 7) atau langsung di Supabase (*Authentication → Users → Add user*, centang auto-confirm). Lalu di SQL Editor jalankan (ganti emailnya):
    ```sql
    insert into public.admin_users (user_id)
@@ -457,6 +458,7 @@ Buka **Ruang Redaksi** (`#/admin`), masuk kode sandi admin, lalu di bagian **Tok
 | `#/dasbor` | Dasbor member (menu samping). Kalau toko aktif dan belum masuk, diantar ke halaman masuk lalu kembali ke dasbor |
 | `#/dasbor/rak`, `/cari`, `/favorit`, `/riwayat`, `/pembelian`, `/akun`, `/suara`, `/tentang` | Halaman di dalam dasbor. `/pembelian` hanya ada kalau toko aktif |
 | `#/klien` | Tampilan klien: ringkasan formal untuk peninjau, tanpa dekorasi, bisa dicetak |
+| `#/kebijakan-privasi`, `#/syarat-ketentuan` | Dokumen hukum, dibacakan Nalar. Tautannya ada di footer dan di form buat akun (lihat 10.6) |
 
 Pengunjung tanpa akun tetap bisa membaca semua ebook gratis. Akun hanya dibutuhkan untuk membeli ebook berbayar dan membuka dasbor.
 
@@ -471,13 +473,16 @@ Halaman **About Me** di dasbor dan bagian Kontak di `/klien` membaca tiga kunci 
   "TOKO_DEMO": false,
   "TENTANG_PEMBUAT": "Cerita singkat tentang kamu dan kenapa web ini dibuat (maksimal 1200 huruf).",
   "KONTAK_EMAIL": "emailmu@contoh.com",
+  "NAMA_PENGELOLA": "Namamu atau nama usahamu",
+  "KOTA_DOMISILI": "Surabaya",
+  "TAHUN_HAK_CIPTA": 2026,
   "TAUTAN": [
     { "label": "Instagram", "url": "https://instagram.com/namamu" }
   ]
 }
 ```
 
-Bawaannya ada di `src/config.ts` (`TENTANG_PEMBUAT`, `KONTAK_EMAIL`, `TAUTAN_KONTAK`). Nama yang tampil sebagai pembuat adalah `NAMA_PENULIS_DEFAULT`, jadi **ganti dari "Pemilik Ruang Nalar"** dengan namamu.
+Bawaannya ada di `src/config.ts` (`TENTANG_PEMBUAT`, `KONTAK_EMAIL`, `TAUTAN_KONTAK`, `NAMA_PENGELOLA`, `KOTA_DOMISILI`, `TAHUN_HAK_CIPTA`). Tiga kunci terakhir dipakai dokumen hukum (10.6). Nama yang tampil sebagai pembuat adalah `NAMA_PENULIS_DEFAULT`, jadi **ganti dari "Pemilik Ruang Nalar"** dengan namamu.
 
 ### 10.3 Lupa dan ganti kata sandi
 
@@ -510,6 +515,20 @@ tag: [sosiologi, karier, sampul-kolase]
 ```
 
 Tag itu sengaja dipakai (bukan kolom baru) supaya gaya sampul ikut terbawa ke katalog toko tanpa mengubah skema Supabase. Tag yang berawalan `sampul-` tidak ditampilkan ke pembaca, tidak masuk filter tag, dan tidak ikut pencarian. Judul pada sampul dipecah otomatis jadi 1-3 baris huruf kapital; subjudul dipotong kalau lebih dari 34 huruf. Warna kulit Nalar mengikuti `tema`. Kanji ditanam sebagai bentuk SVG (huruf Noto Sans CJK JP Black, lisensi SIL OFL), jadi tampil sama di semua perangkat. Pilihan huruf judul `Montserrat` dimuat dari Google Fonts dan akan jatuh ke Arial Black kalau offline.
+
+### 10.6 Kebijakan Privasi, persetujuan, dan hapus akun
+
+Web ini punya dua dokumen hukum yang dibacakan Nalar (`#/kebijakan-privasi` dan `#/syarat-ketentuan`) dan fitur privasi dasar yang mengikuti UU No. 27 Tahun 2022 (PDP).
+
+- **Isi dokumen** ada di `src/lib/legal/dokumen.ts`. Nama pengelola, email kontak, dan kota domisili diambil dari `NAMA_PENGELOLA`, `KONTAK_EMAIL`, dan `KOTA_DOMISILI` (10.2), jadi tidak perlu menyunting teksnya. Kalau email atau kota kosong, dokumen tetap utuh dan menunjuk jalur kontak lain.
+- **Versi dokumen** ada di `src/lib/legal/versi.ts`. Setiap kali isi dokumen berubah, naikkan `VERSI_KEBIJAKAN` (maksimal 20 karakter), ubah `TANGGAL_BERLAKU`, dan tambah satu baris di `RIWAYAT_PERUBAHAN`. Pengunjung lama akan ditanya lagi lewat banner cookie.
+- **Banner cookie**: tiga tombol setara (Terima semua, Hanya yang perlu, Atur pilihan), tidak ada yang tercentang dari awal, dan bisa dibuka lagi lewat tautan *Pengaturan cookie* di footer. **Saat ini web tidak memasang analitik atau pelacak apa pun**, dan banner jujur soal itu. Kalau kelak kamu memasang analitik, bungkus kodenya dengan `bolehAnalitik()` dari `src/lib/persetujuan.ts` supaya hanya jalan untuk yang mengizinkan, lalu ubah kalimat di banner dan di Kebijakan Privasi (bagian 6 dan 8).
+- **Form buat akun** punya kotak persetujuan wajib (Kebijakan Privasi dan Syarat & Ketentuan, tidak tercentang dari awal) dan kotak opsional untuk email promo. Tombol *Buat akun* aktif setelah kotak wajib dicentang.
+- **Catatan persetujuan di database**: tabel `public.persetujuan` hanya bisa ditambah (tidak ada kebijakan ubah/hapus untuk pengguna), memuat jenis, setuju atau tidak, versi dokumen, dan waktu dari server. Menarik persetujuan = menambah baris baru. Untuk database yang sudah berjalan, jalankan `supabase/patch/01-persetujuan.sql` sekali di SQL Editor (aman diulang). Pemasangan baru dari `schema.sql` sudah memuatnya.
+- **Akun & pengaturan → Privasi & persetujuan**: pengguna bisa mencabut izin promo atau analitik, melihat riwayat, mengunduh data akunnya (JSON), dan menghapus akun dengan mengetik `HAPUS`.
+- **Hapus akun** butuh satu Edge Function opsional bernama `hapus-akun` (kode: `supabase/dashboard/hapus-akun.ts`, deploy dengan cara yang sama seperti dua fungsi pembayaran, **matikan Verify JWT**, secret `SITE_URL` yang sama). Akun admin ditolak oleh fungsi ini. Tanpa fungsinya, tombol memberi tahu pengguna untuk meminta hapus lewat email. Catatan transaksi di sisi Midtrans tidak ikut terhapus.
+
+> **Penting:** teks hukum ini disusun dengan itikad baik sebagai titik awal, bukan nasihat hukum. Sebelum web dipakai berjualan secara luas, minta konsultan hukum atau layanan bantuan hukum kampus membacanya, terutama bagian refund, batas tanggung jawab, dan domisili hukum.
 
 ---
 

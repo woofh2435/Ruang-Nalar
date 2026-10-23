@@ -2,7 +2,7 @@
 // Semua aturan akses dipaksa oleh Row Level Security di database (supabase/schema.sql), bukan oleh kode ini.
 
 import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js'
-import { GalatToko, SANDI_MIN, emailValid, idEbookValid, type Backend, type ItemKatalog, type KodeGalat, type MasukanEbookToko, type Pembelian, type Sesi } from './tipe'
+import { GalatToko, SANDI_MIN, emailValid, idEbookValid, type Backend, type CatatanPersetujuan, type ItemKatalog, type JenisPersetujuan, type KodeGalat, type MasukanEbookToko, type Pembelian, type Sesi } from './tipe'
 
 /** Ubah galat Supabase (bahasa Inggris) menjadi GalatToko berbahasa Indonesia yang ramah. */
 export function petaGalat(e: unknown): GalatToko {
@@ -39,6 +39,15 @@ const keItem = (r: Record<string, unknown>): ItemKatalog => ({
   harga: Number(r.harga ?? 0),
   terbit: Boolean(r.terbit),
   urutan: Number(r.urutan ?? 0),
+})
+
+const JENIS_PERSETUJUAN: JenisPersetujuan[] = ['syarat_privasi', 'promo', 'analitik']
+const keCatatan = (r: Record<string, unknown>): CatatanPersetujuan => ({
+  id: String(r.id),
+  jenis: (JENIS_PERSETUJUAN.includes(r.jenis as JenisPersetujuan) ? r.jenis : 'syarat_privasi') as JenisPersetujuan,
+  status: r.status === true,
+  versi: String(r.versi_kebijakan ?? ''),
+  dibuat: String(r.dibuat ?? ''),
 })
 
 const kePembelian = (r: Record<string, unknown>): Pembelian => ({
@@ -85,14 +94,17 @@ export function buatBackendSupabase(url: string, kunci: string): Backend {
       })
       return () => data.subscription.unsubscribe()
     },
-    async daftar(email, sandi) {
+    async daftar(email, sandi, persetujuan) {
       const e = email.trim().toLowerCase()
       if (!emailValid(e)) throw new GalatToko('email_tidak_valid', 'Alamat email belum benar.')
       if (sandi.length < SANDI_MIN) throw new GalatToko('sandi_lemah', `Kata sandi minimal ${SANDI_MIN} karakter.`)
       // tujuan tautan konfirmasi = alamat web ini (lengkap dengan nama repo). Harus ada di Supabase → Authentication → URL Configuration → Redirect URLs;
       // kalau tidak ada di sana, Supabase memakai Site URL.
       const tujuan = typeof location !== 'undefined' ? location.origin + location.pathname : undefined
-      const { data, error } = await klien.auth.signUp({ email: e, password: sandi, ...(tujuan ? { options: { emailRedirectTo: tujuan } } : {}) })
+      // pilihan persetujuan ikut sebagai metadata; trigger database (catat_persetujuan_daftar) mencatatnya dengan waktu server
+      const data0 = persetujuan ? { persetujuan: { versi: persetujuan.versi, syarat: true, promo: persetujuan.promo, analitik: persetujuan.analitik } } : undefined
+      const opsi = { ...(tujuan ? { emailRedirectTo: tujuan } : {}), ...(data0 ? { data: data0 } : {}) }
+      const { data, error } = await klien.auth.signUp({ email: e, password: sandi, ...(Object.keys(opsi).length ? { options: opsi } : {}) })
       if (error) lempar(error)
       // email sudah terdaftar tetapi dikonfirmasi: Supabase mengembalikan user tanpa identities (anti-enumerasi)
       if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) throw new GalatToko('email_terdaftar', 'Email ini sudah terdaftar. Coba masuk.')
@@ -123,6 +135,44 @@ export function buatBackendSupabase(url: string, kunci: string): Backend {
       if (sandiBaru.length < SANDI_MIN) throw new GalatToko('sandi_lemah', `Kata sandi minimal ${SANDI_MIN} karakter.`)
       const { error } = await klien.auth.updateUser({ password: sandiBaru })
       if (error) lempar(error)
+    },
+    async riwayatPersetujuan() {
+      const { data: ses } = await klien.auth.getSession()
+      const uid = ses.session?.user.id
+      if (!uid) return []
+      const { data, error } = await klien.from('persetujuan').select('*').eq('user_id', uid).order('dibuat', { ascending: false }).order('id', { ascending: false }).limit(200)
+      if (error) lempar(error)
+      return (data ?? []).map(keCatatan)
+    },
+    async catatPersetujuan(jenis, status, versi) {
+      const { data: ses } = await klien.auth.getSession()
+      const uid = ses.session?.user.id
+      if (!uid) throw new GalatToko('belum_login', 'Sesi masuk habis. Silakan masuk lagi.')
+      if (!JENIS_PERSETUJUAN.includes(jenis)) throw new GalatToko('ditolak', 'Jenis persetujuan tidak dikenal.')
+      const { error } = await klien.from('persetujuan').insert({ user_id: uid, jenis, status, versi_kebijakan: versi.slice(0, 20) })
+      if (error) lempar(error)
+    },
+    async hapusAkun() {
+      const { error } = await klien.functions.invoke('hapus-akun', { body: { konfirmasi: 'HAPUS' } })
+      if (error) {
+        let kode = ''
+        let status = 0
+        try {
+          const ctx = (error as { context?: Response }).context
+          status = ctx?.status ?? 0
+          if (ctx && typeof ctx.json === 'function') kode = String(((await ctx.json()) as { error?: string }).error ?? '')
+        } catch {
+          /* abaikan */
+        }
+        if (kode === 'admin_tidak_bisa') throw new GalatToko('admin_tidak_bisa', 'Akun admin tidak bisa dihapus dari sini demi keamanan.')
+        if (kode === 'belum_login') throw new GalatToko('belum_login', 'Sesi masuk habis. Silakan masuk lagi.')
+        if (status === 404 || /not found|failed to send|fetch/i.test(String((error as Error).message))) {
+          throw new GalatToko('server_belum_diatur', 'Penghapusan otomatis belum diaktifkan oleh pemilik web. Kirim permintaan hapus akun lewat email kontak.')
+        }
+        return lempar(error)
+      }
+      // sesi lokal sudah tidak berlaku (pengguna sudah terhapus di server)
+      await klien.auth.signOut({ scope: 'local' }).catch(() => undefined)
     },
     async katalog() {
       const { data, error } = await klien.from('ebook_berbayar').select('*').eq('terbit', true).order('urutan', { ascending: true }).order('dibuat', { ascending: true })

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { NAMA_PENULIS_DEFAULT, NAMA_WEB } from '../config'
+import { bukaPengaturanCookie } from '../lib/persetujuan'
 
 export function Footer() {
   return (
@@ -14,6 +15,15 @@ export function Footer() {
         <Link to="/klien" className="inline-flex min-h-[44px] items-center underline underline-offset-4" style={{ color: 'var(--teks)' }}>
           Untuk peninjau
         </Link>
+        <Link to="/kebijakan-privasi" className="inline-flex min-h-[44px] items-center underline underline-offset-4" style={{ color: 'var(--teks)' }}>
+          Kebijakan Privasi
+        </Link>
+        <Link to="/syarat-ketentuan" className="inline-flex min-h-[44px] items-center underline underline-offset-4" style={{ color: 'var(--teks)' }}>
+          Syarat &amp; Ketentuan
+        </Link>
+        <button type="button" onClick={bukaPengaturanCookie} className="inline-flex min-h-[44px] items-center underline underline-offset-4" style={{ color: 'var(--teks)' }}>
+          Pengaturan cookie
+        </button>
         <Link to="/admin" className="inline-flex min-h-[44px] items-center underline underline-offset-4" style={{ color: 'var(--teks)' }}>
           Ruang Redaksi
         </Link>
