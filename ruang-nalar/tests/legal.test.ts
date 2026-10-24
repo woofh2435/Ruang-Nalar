@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { kebijakanPrivasi, noticeHakCipta, syaratKetentuan, type DataLegal, type DokLegal } from '../src/lib/legal/dokumen'
 import { bangunEksporData, cocokKonfirmasiHapus, LABEL_JENIS, namaBerkasEkspor, statusTerkini } from '../src/lib/legal/ekspor'
@@ -225,5 +226,19 @@ describe('ekspor data akun', () => {
     expect(cocokKonfirmasiHapus('HAPUS')).toBe(true)
     expect(cocokKonfirmasiHapus('  HAPUS ')).toBe(true)
     for (const s of ['hapus', 'Hapus', 'HAPUS AKUN', '', 'HAPU']) expect(cocokKonfirmasiHapus(s), s).toBe(false)
+  })
+})
+
+describe('notice hak cipta di pembaca', () => {
+  const baca = (p: string) => readFileSync(new URL('../' + p, import.meta.url), 'utf8')
+  it('dipasang di tiap bab (Reader) dan di footer, dengan kalimat persis dari brief', () => {
+    expect(baca('src/pages/Reader.tsx')).toMatch(/<NoticeHakCipta penulis=\{penulisTampil\(ebook\)\} \/>/)
+    expect(baca('src/components/Footer.tsx')).toContain('Seluruh hak dilindungi UU No. 28 Tahun 2014 tentang Hak Cipta.')
+    expect(noticeHakCipta('Nama Penulis', 2026)).toBe('© 2026 Nama Penulis. Seluruh hak dilindungi UU No. 28 Tahun 2014 tentang Hak Cipta.')
+  })
+  it('notice berada di dalam artikel bab, sebelum ajakan lanjut', () => {
+    const r = baca('src/pages/Reader.tsx')
+    expect(r.indexOf('<NoticeHakCipta')).toBeGreaterThan(r.indexOf('aria-label="Pindah bab"'))
+    expect(r.indexOf('<NoticeHakCipta')).toBeLessThan(r.indexOf('<AjakanLanjut />'))
   })
 })

@@ -530,6 +530,13 @@ Web ini punya dua dokumen hukum yang dibacakan Nalar (`#/kebijakan-privasi` dan 
 
 > **Penting:** teks hukum ini disusun dengan itikad baik sebagai titik awal, bukan nasihat hukum. Sebelum web dipakai berjualan secara luas, minta konsultan hukum atau layanan bantuan hukum kampus membacanya, terutama bagian refund, batas tanggung jawab, dan domisili hukum.
 
+### 10.7 Hak cipta dan bukti kepemilikan
+
+- **Notice hak cipta** tampil di ujung setiap bab (`© 2026 Nama Penulis. Seluruh hak dilindungi UU No. 28 Tahun 2014 tentang Hak Cipta.`) dan di footer. Nama penulis diambil dari baris `penulis:` di ebook (bila kosong, dari `NAMA_PENULIS_DEFAULT`), tahunnya dari `TAHUN_HAK_CIPTA`, dan nama pengelola di footer dari `NAMA_PENGELOLA`.
+- **Syarat & Ketentuan** bagian 2 menyatakan pembaca hanya mendapat lisensi baca pribadi, dan bagian 7 menyediakan jalur pelaporan konten bermasalah (takedown) ke email kontak.
+- **Pencatatan ciptaan ke DJKI** (Direktorat Jenderal Kekayaan Intelektual) bisa menjadi bukti kepemilikan bila kelak ada sengketa plagiarisme. Prosesnya dilakukan sendiri oleh pemilik karya. Cek syarat, biaya, dan alur terbarunya langsung di situs resmi DJKI karena bisa berubah.
+- **Simpan bukti waktu pembuatan** sebagai pendukung: riwayat commit di GitHub (jangan hapus repo-nya), simpan salinan berkas `.md` asli, dan simpan sidik jari (hash) tiap berkas. Contoh di Linux/macOS: `shasum -a 256 ebook-saya.md`.
+
 ---
 
 ## 11. Ebook berbayar "Jalur Sosiologi": cara memasukkannya

@@ -7,6 +7,7 @@ import { Footer } from '../components/Footer'
 import { TombolKoleksi } from '../components/dasbor/TombolKoleksi'
 import { KepalaBab } from '../components/reader/KepalaBab'
 import { AjakanLanjut } from '../components/landing/AjakanLanjut'
+import { NoticeHakCipta } from '../components/legal/NoticeHakCipta'
 import { PintuToko } from '../components/toko/PintuToko'
 import { Nalar } from '../components/nalar/Nalar'
 import { useNalar } from '../components/nalar/NalarContext'
@@ -472,6 +473,7 @@ function ReaderIsi({ ebook }: { ebook: Ebook }) {
                           </Link>
                         )}
                       </nav>
+                      <NoticeHakCipta penulis={penulisTampil(ebook)} />
                       {idx === n - 1 && ebook.sumber === 'publik' && <AjakanLanjut />}
                     </div>
                   </Panel>
