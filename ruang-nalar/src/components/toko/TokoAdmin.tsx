@@ -5,7 +5,7 @@ import type { PesanAdmin } from '../admin/DaftarEbook'
 import { Ikon } from '../art/Ikon'
 import { Panel } from '../art/Panel'
 import { useNalar } from '../nalar/NalarContext'
-import { bacaBerkas, BATAS_BERKAS, slugify, unduhTeks } from '../../lib/berkas'
+import { bacaBerkas, BATAS_BERKAS, namaBerkasTeksValid, periksaIsiTeks, slugify, unduhTeks } from '../../lib/berkas'
 import { useSemuaEbook } from '../../lib/library'
 import { parseEbook } from '../../lib/parser'
 import { TEMA } from '../../lib/tema'
@@ -172,12 +172,22 @@ function FormToko({ awal, onSelesai, onPesan }: { awal: ItemKatalog | null; onSe
                   const f = e.target.files?.[0]
                   e.target.value = ''
                   if (!f) return
+                  if (!namaBerkasTeksValid(f.name)) {
+                    setGalat([`"${f.name}" bukan file .md atau .txt. Pilih file teks ebook, ya.`])
+                    return
+                  }
                   if (f.size > BATAS_BERKAS) {
                     setGalat(['File terlalu besar (maksimal 2 MB).'])
                     return
                   }
                   try {
-                    setRaw(await bacaBerkas(f))
+                    const teksBerkas = await bacaBerkas(f)
+                    const bukanTeks = periksaIsiTeks(teksBerkas)
+                    if (bukanTeks) {
+                      setGalat([bukanTeks])
+                      return
+                    }
+                    setRaw(teksBerkas)
                     setGalat([])
                   } catch {
                     setGalat(['File tidak bisa dibaca. Coba pilih ulang.'])

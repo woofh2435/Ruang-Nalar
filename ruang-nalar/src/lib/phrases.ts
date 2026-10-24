@@ -54,6 +54,8 @@ export type Kejadian =
   | 'daftarSyarat'
   | 'dataUnduh'
   | 'akunHapus'
+  | 'masukTahan'
+  | 'captchaBelum'
 
 export interface Frasa {
   t: string
@@ -175,6 +177,8 @@ export const FRASA: Record<Kejadian, Frasa[]> = {
   daftarSyarat: [f('Baca dulu, lalu centang kotaknya. Aku sabar.', 'mikir')],
   dataUnduh: [f('Datamu sudah kuunduhkan. Simpan baik-baik.', 'senang')],
   akunHapus: [f('Akunmu sudah dihapus. Terima kasih sudah mampir.', 'sedih')],
+  masukTahan: [f('Pelan-pelan dulu. Aku jaga pintunya sebentar.', 'mikir')],
+  captchaBelum: [f('Selesaikan cek manusianya dulu, ya.', 'kedip-nakal')],
 }
 
 export const SEMUA_FRASA: Frasa[] = Object.values(FRASA).flat()

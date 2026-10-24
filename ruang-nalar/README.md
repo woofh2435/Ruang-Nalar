@@ -277,11 +277,13 @@ ruang-nalar/
 │  │  ├─ nalar/                   ← maskot Nalar (SVG, ekspresi, otak/mood)
 │  │  └─ reader/                  ← blok ebook (termasuk misi, jalur karier, peta, papan di BlokKarier.tsx), kepala bab, sorot, progres, data baca
 │  └─ lib/                        ← parser ebook, IndexedDB, penyimpanan, frasa Nalar, musik (musik.ts, penghasilMusik.ts, audio.ts), tema, sampul (+ kanjiSampul.ts), papan.ts (poin & tingkat), toko/ (akun & bayar)
+├─ KEAMANAN.md                    ← status perlindungan, cara menyalakan CAPTCHA, daftar yang perlu kamu atur
 ├─ supabase/                      ← (opsional) schema.sql + Edge Functions untuk akun & pembayaran
 │  ├─ schema.sql, functions/      ← tabel + aturan akses, buat-transaksi, midtrans-webhook, hapus-akun (opsional)
 │  ├─ patch/                      ← tambahan untuk database yang sudah berjalan (01-persetujuan.sql)
 │  ├─ dashboard/                  ← versi satu-berkas kedua fungsi, untuk ditempel di Dashboard Supabase
 │  └─ tests/edge_test.ts          ← uji Edge Function dengan Deno (Supabase & Midtrans tiruan)
+├─ scripts/                       ← bundel-fungsi.mjs, csp.ts (kebijakan keamanan konten), satu-file.mjs
 ├─ tests/                         ← vitest (parser, frasa, kontras, lencana, toko, aturan RLS, panduan toko, dasbor, musik, klaim promosi)
 ├─ index.html, vite.config.ts, tailwind.config.js, tsconfig.json
 └─ package.json, package-lock.json
@@ -536,6 +538,15 @@ Web ini punya dua dokumen hukum yang dibacakan Nalar (`#/kebijakan-privasi` dan 
 - **Syarat & Ketentuan** bagian 2 menyatakan pembaca hanya mendapat lisensi baca pribadi, dan bagian 7 menyediakan jalur pelaporan konten bermasalah (takedown) ke email kontak.
 - **Pencatatan ciptaan ke DJKI** (Direktorat Jenderal Kekayaan Intelektual) bisa menjadi bukti kepemilikan bila kelak ada sengketa plagiarisme. Prosesnya dilakukan sendiri oleh pemilik karya. Cek syarat, biaya, dan alur terbarunya langsung di situs resmi DJKI karena bisa berubah.
 - **Simpan bukti waktu pembuatan** sebagai pendukung: riwayat commit di GitHub (jangan hapus repo-nya), simpan salinan berkas `.md` asli, dan simpan sidik jari (hash) tiap berkas. Contoh di Linux/macOS: `shasum -a 256 ebook-saya.md`.
+
+### 10.8 Keamanan
+
+Ringkasan perlindungan yang sudah ada, yang opsional, dan yang belum ada ada di **`KEAMANAN.md`**. Hal-hal yang berhubungan dengan kode:
+
+- **Content-Security-Policy** dipasang otomatis pada build produksi lewat `scripts/csp.ts` (tidak aktif di `npm run dev`). Kalau kamu menyambungkan layanan baru (analitik, font lain, domain Supabase sendiri), tambahkan alamatnya di `SUMBER` pada berkas itu, lalu salin baris yang benar ke `public/_headers` (tes akan menampilkan barisnya bila berbeda).
+- **Satu-berkas** (`index.html` yang langsung tayang tanpa GitHub Actions): `npm run build:docs` lalu `node scripts/satu-file.mjs docs satu-berkas.html`. Skrip ini otomatis menambahkan hash skrip yang di-inline ke CSP. Ganti nama hasilnya menjadi `index.html` di akar repo hanya kalau kamu memang tidak memakai GitHub Actions, dan simpan `index.html` asli sebagai `index.sumber.html`.
+- **Jeda login** di browser (`src/lib/toko/cooldown.ts`) dan **CAPTCHA opsional** (`TURNSTILE_SITE_KEY` di `toko-config.json`, mati secara bawaan).
+- **Validasi unggahan** ebook (`periksaIsiTeks` di `src/lib/berkas.ts`).
 
 ---
 

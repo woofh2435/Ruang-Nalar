@@ -4,8 +4,12 @@ import { Ikon } from '../components/art/Ikon'
 import { Panel } from '../components/art/Panel'
 import { BannerDemo } from '../components/toko/BannerDemo'
 import { PanelPersetujuan } from '../components/legal/PanelPersetujuan'
+import { Captcha, type PegangCaptcha } from '../components/toko/Captcha'
 import { Nalar } from '../components/nalar/Nalar'
 import { useNalar } from '../components/nalar/NalarContext'
+import { pesanJeda } from '../lib/toko/cooldown'
+import { useCooldownMasuk } from '../lib/toko/cooldown'
+import { ambilKunciCaptcha } from '../lib/toko/captcha'
 import { susunPersetujuanDaftar } from '../lib/persetujuan'
 import { useJudulHalaman } from '../lib/judul'
 import { EMAIL_ADMIN_DEMO } from '../lib/toko/demo'
@@ -30,6 +34,9 @@ export function Masuk() {
   const [cekEmail, setCekEmail] = useState('')
   const [setuju, setSetuju] = useState(false)
   const [promo, setPromo] = useState(false)
+  const [tokenCaptcha, setTokenCaptcha] = useState<string | null>(null)
+  const captcha = useRef<PegangCaptcha>(null)
+  const jeda = useCooldownMasuk()
   const [tema] = useTemaGlobal()
   const { katakan } = useNalar()
   const idEmail = useId()
@@ -79,22 +86,39 @@ export function Masuk() {
       setGalat('Isi kata sandinya dulu, ya.')
       return
     }
+    if (!daftar && jeda.sisa > 0) {
+      setGalat(pesanJeda(jeda.sisa))
+      katakan('masukTahan')
+      return
+    }
+    if (ambilKunciCaptcha() && tk.mode === 'nyata' && !tokenCaptcha) {
+      setGalat('Selesaikan cek manusia dulu, ya.')
+      katakan('captchaBelum')
+      return
+    }
     setGalat('')
     setSibuk(true)
     try {
       const toko = ambilToko()
       if (daftar) {
-        const h = await toko.daftar(em, sandi, susunPersetujuanDaftar(promo))
+        const h = await toko.daftar(em, sandi, susunPersetujuanDaftar(promo), tokenCaptcha ?? undefined)
         if (h.perluKonfirmasi) setCekEmail(em)
         else katakan('tokoMasuk')
       } else {
-        await toko.masuk(em, sandi)
+        await toko.masuk(em, sandi, tokenCaptcha ?? undefined)
+        jeda.berhasil()
         katakan('tokoMasuk')
       }
     } catch (err) {
+      if (!daftar && err instanceof GalatToko) {
+        if (err.kode === 'kredensial_salah') jeda.gagal()
+        else if (err.kode === 'terlalu_sering') jeda.server()
+      }
       setGalat(err instanceof GalatToko ? err.message : 'Terjadi kesalahan. Coba lagi.')
       katakan('tokoGalat')
     } finally {
+      // token CAPTCHA hanya berlaku sekali
+      captcha.current?.reset()
       setSibuk(false)
     }
   }
@@ -200,13 +224,14 @@ export function Masuk() {
                   </Link>
                 </p>
               )}
+              <Captcha ref={captcha} onToken={setTokenCaptcha} />
               {daftar && <PanelPersetujuan setuju={setuju} promo={promo} onSetuju={setSetuju} onPromo={setPromo} perluSetuju={!!galat && !setuju} />}
               <p id={idGalat} role="alert" className="m-0 mt-2 min-h-[1.5rem] font-semibold" style={{ color: '#7a1608' }}>
                 {galat}
               </p>
               <div className="mt-2 flex flex-wrap items-center gap-3">
-                <button type="submit" className="tombol tombol-primer" disabled={sibuk || (daftar && !setuju)} aria-busy={sibuk}>
-                  {sibuk ? 'Sebentar…' : daftar ? 'Buat akun' : 'Masuk'}
+                <button type="submit" className="tombol tombol-primer" disabled={sibuk || (daftar && !setuju) || (!daftar && jeda.sisa > 0)} aria-busy={sibuk}>
+                  {sibuk ? 'Sebentar…' : daftar ? 'Buat akun' : jeda.sisa > 0 ? `Tunggu ${Math.ceil(jeda.sisa / 1000)} dtk` : 'Masuk'}
                 </button>
                 <Link to="/" className="tombol">
                   Kembali ke rak

@@ -159,6 +159,13 @@ export function PintuToko({ ebook }: { ebook: Ebook }) {
                         Kamu akan diarahkan ke halaman pembayaran Midtrans. Metode yang tersedia mengikuti pengaturan Midtrans pemilik web. Data kartu atau rekeningmu tidak pernah melewati web ini.
                       </p>
                     )}
+                    <p className="m-0 mt-1 text-xs" style={{ color: 'var(--tinta-redup)' }}>
+                      Dengan membeli, kamu menyetujui{' '}
+                      <Link to="/syarat-ketentuan" className="font-semibold underline underline-offset-4" style={{ color: 'var(--tautan)' }}>
+                        Syarat &amp; Ketentuan
+                      </Link>{' '}
+                      (termasuk kebijakan pengembalian dana).
+                    </p>
                   </>
                 )}
                 <p id="galat-bayar" role="alert" className="m-0 mt-3 min-h-[1.25rem] font-semibold" style={{ color: '#7a1608' }}>

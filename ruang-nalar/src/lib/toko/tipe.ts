@@ -57,6 +57,7 @@ export type KodeGalat =
   | 'sandi_sama'
   | 'tautan_kedaluwarsa'
   | 'admin_tidak_bisa'
+  | 'captcha_gagal'
   | 'lainnya'
 
 export class GalatToko extends Error {
@@ -110,11 +111,11 @@ export interface Backend {
   /** mengembalikan fungsi berhenti-mendengar */
   onSesi(cb: (s: Sesi | null) => void): () => void
   /** `persetujuan` dikirim bersama pendaftaran dan dicatat server (log persetujuan). */
-  daftar(email: string, sandi: string, persetujuan?: PersetujuanDaftar): Promise<{ perluKonfirmasi: boolean }>
-  masuk(email: string, sandi: string): Promise<void>
+  daftar(email: string, sandi: string, persetujuan?: PersetujuanDaftar, captchaToken?: string): Promise<{ perluKonfirmasi: boolean }>
+  masuk(email: string, sandi: string, captchaToken?: string): Promise<void>
   keluar(): Promise<void>
   /** Kirim email atur ulang sandi. Hasilnya sama untuk email terdaftar maupun tidak (mencegah orang menebak email pengguna). */
-  kirimResetSandi(email: string): Promise<HasilReset>
+  kirimResetSandi(email: string, captchaToken?: string): Promise<HasilReset>
   /** Tukar token dari tautan email menjadi sesi masuk. */
   pulihkanDariTautan(t: TautanAuth): Promise<void>
   /** Ganti sandi akun yang sedang masuk. */

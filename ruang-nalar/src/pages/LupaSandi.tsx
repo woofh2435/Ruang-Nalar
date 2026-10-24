@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Ikon } from '../components/art/Ikon'
 import { Panel } from '../components/art/Panel'
 import { BannerDemo } from '../components/toko/BannerDemo'
+import { Captcha, type PegangCaptcha } from '../components/toko/Captcha'
+import { ambilKunciCaptcha } from '../lib/toko/captcha'
 import { Nalar } from '../components/nalar/Nalar'
 import { useNalar } from '../components/nalar/NalarContext'
 import { useTemaGlobal } from '../lib/store'
@@ -24,6 +26,8 @@ export function LupaSandi() {
   const idEmail = useId()
   const idGalat = useId()
   const refEmail = useRef<HTMLInputElement>(null)
+  const [tokenCaptcha, setTokenCaptcha] = useState<string | null>(null)
+  const captcha = useRef<PegangCaptcha>(null)
 
   useEffect(() => {
     refEmail.current?.focus()
@@ -48,16 +52,22 @@ export function LupaSandi() {
       refEmail.current?.focus()
       return
     }
+    if (ambilKunciCaptcha() && tk.mode === 'nyata' && !tokenCaptcha) {
+      setGalat('Selesaikan cek manusia dulu, ya.')
+      katakan('captchaBelum')
+      return
+    }
     setGalat('')
     setSibuk(true)
     try {
-      const h = await ambilToko().kirimResetSandi(em)
+      const h = await ambilToko().kirimResetSandi(em, tokenCaptcha ?? undefined)
       setTerkirim({ email: em, demo: h.tautanDemo })
       katakan('sandiKirim')
     } catch (err) {
       setGalat(err instanceof GalatToko ? err.message : 'Terjadi kesalahan. Coba lagi.')
       katakan('tokoGalat')
     } finally {
+      captcha.current?.reset()
       setSibuk(false)
     }
   }
@@ -141,6 +151,7 @@ export function LupaSandi() {
                 setGalat('')
               }}
             />
+            <Captcha ref={captcha} onToken={setTokenCaptcha} />
             <p id={idGalat} role="alert" className="m-0 mt-2 min-h-[1.5rem] font-semibold" style={{ color: '#7a1608' }}>
               {galat}
             </p>

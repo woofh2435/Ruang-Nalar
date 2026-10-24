@@ -1,4 +1,4 @@
-Tahap p2: cara memasang
+Tahap p3: cara memasang
 1. Salin SEMUA isi zip ini ke folder proyek Ruang Nalar-mu (folder yang berisi README.md dan folder src), timpa kalau diminta.
    Berkas yang tidak ada di zip tidak disentuh, jadi proyek, ebook, dan konfigurasi lain tetap utuh.
 2. Folder docs/ adalah hasil build baru. Berkas lama di docs/assets/ dengan nama berbeda boleh dihapus (tidak wajib).
@@ -6,9 +6,25 @@ Tahap p2: cara memasang
 4. Kalau zip memuat berkas di supabase/patch/, jalankan isinya SEKALI di Supabase -> SQL Editor (aman diulang).
 5. Jangan lupa Commit di GitHub, lalu tunggu 1-2 menit sampai Pages memperbarui.
 
-Berkas sumber yang berubah atau baru di tahap ini (5):
+Berkas sumber yang berubah atau baru di tahap ini (21):
+  .github/dependabot.yml
   README.md
-  src/components/Footer.tsx
-  src/components/legal/NoticeHakCipta.tsx
-  src/pages/Reader.tsx
-  tests/legal.test.ts
+  public/_headers
+  scripts/csp.ts
+  scripts/satu-file.mjs
+  src/components/admin/Editor.tsx
+  src/components/toko/Captcha.tsx
+  src/components/toko/PintuToko.tsx
+  src/components/toko/TokoAdmin.tsx
+  src/lib/berkas.ts
+  src/lib/phrases.ts
+  src/lib/toko/captcha.ts
+  src/lib/toko/cooldown.ts
+  src/lib/toko/store.ts
+  src/lib/toko/supabase.ts
+  src/lib/toko/tipe.ts
+  src/pages/LupaSandi.tsx
+  src/pages/Masuk.tsx
+  tests/keamanan.test.ts
+  tsconfig.json
+  vite.config.ts

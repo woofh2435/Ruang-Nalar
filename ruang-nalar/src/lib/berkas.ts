@@ -37,6 +37,42 @@ export function bacaBerkas(file: File): Promise<string> {
 
 export const BATAS_BERKAS = 2 * 1024 * 1024 // 2 MB per ebook
 
+/** Hanya berkas teks yang diterima sebagai isi ebook. */
+export const namaBerkasTeksValid = (nama: string): boolean => /\.(md|markdown|txt)$/i.test(nama)
+
+// tanda awal berkas yang BUKAN teks (zip/docx/xlsx, pdf, program, gambar). Dicek pada isi, bukan hanya pada nama berkas.
+const TANDA_BUKAN_TEKS: [string, string][] = [
+  ['PK\u0003\u0004', 'ZIP/Word/Excel'],
+  ['%PDF', 'PDF'],
+  ['MZ', 'program'],
+  ['\u007fELF', 'program'],
+  ['\u0089PNG', 'gambar'],
+  ['GIF8', 'gambar'],
+  ['\u00ff\u00d8\u00ff', 'gambar'],
+]
+
+/**
+ * Periksa isi berkas yang diunggah sebagai ebook. Mengembalikan pesan galat, atau null bila isinya wajar sebagai teks.
+ * Ini pemeriksaan di browser untuk mencegah salah pilih berkas (dan berkas biner yang menyamar sebagai .md);
+ * keamanan sebenarnya: isi ebook tidak pernah dirender sebagai HTML, jadi tidak ada skrip yang bisa ikut jalan.
+ */
+export function periksaIsiTeks(teks: string): string | null {
+  const awal = teks.replace(/^\uFEFF/, '').slice(0, 8)
+  for (const [tanda, jenis] of TANDA_BUKAN_TEKS) {
+    if (awal.startsWith(tanda)) return `Isi file ini berupa ${jenis}, bukan teks. Pilih file .md atau .txt yang asli.`
+  }
+  if (teks.includes('\u0000')) return 'File ini mengandung data biner, bukan teks biasa. Pilih file .md atau .txt yang asli.'
+  const contoh = teks.slice(0, 20000)
+  let aneh = 0
+  for (let i = 0; i < contoh.length; i++) {
+    const c = contoh.charCodeAt(i)
+    // karakter kontrol selain tab, baris baru, dan carriage return; juga karakter pengganti (U+FFFD) hasil salah baca encoding
+    if ((c < 32 && c !== 9 && c !== 10 && c !== 13) || c === 0xfffd) aneh++
+  }
+  if (contoh.length > 0 && aneh / contoh.length > 0.02) return 'Isi file ini tidak terbaca sebagai teks UTF-8. Simpan ulang sebagai teks UTF-8 lalu coba lagi.'
+  return null
+}
+
 export function bangunCadangan(ebook: CatatanEbookLokal[]): string {
   return JSON.stringify(
     {

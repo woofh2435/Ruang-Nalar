@@ -18,6 +18,7 @@ export function petaGalat(e: unknown): GalatToko {
   if (/same_password|different from the old password/i.test(pesan + kodeApi)) return baris('sandi_sama', 'Kata sandi baru harus berbeda dari yang lama.')
   if (/otp_expired|token has expired|expired or is invalid|invalid refresh token|refresh_token_not_found/i.test(pesan + kodeApi)) return baris('tautan_kedaluwarsa', 'Tautan sudah kedaluwarsa atau sudah pernah dipakai. Minta tautan baru, ya.')
   if (/auth session missing|session_not_found|not authenticated|jwt expired/i.test(pesan + kodeApi)) return baris('belum_login', 'Sesi habis. Buka lagi tautan dari emailmu, atau masuk dulu.')
+  if (/captcha/i.test(pesan + kodeApi)) return baris('captcha_gagal', 'Cek manusia gagal atau sudah kedaluwarsa. Selesaikan lagi lalu coba sekali lagi.')
   if (/over_email_send_rate_limit|email rate limit/i.test(pesan + kodeApi)) return baris('terlalu_sering', 'Batas pengiriman email sedang penuh karena terlalu banyak percobaan. Tunggu sekitar satu jam lalu coba lagi. Kalau emailmu sudah pernah dikonfirmasi, langsung saja masuk.')
   if (/rate limit|too many|over_.*_rate_limit|429/i.test(pesan + kodeApi)) return baris('terlalu_sering', 'Terlalu sering mencoba. Tunggu beberapa menit lalu coba lagi.')
   if (/failed to fetch|networkerror|network request failed|load failed|fetch/i.test(pesan)) return baris('jaringan', 'Tidak bisa terhubung ke server. Periksa koneksi internetmu.')
@@ -94,7 +95,7 @@ export function buatBackendSupabase(url: string, kunci: string): Backend {
       })
       return () => data.subscription.unsubscribe()
     },
-    async daftar(email, sandi, persetujuan) {
+    async daftar(email, sandi, persetujuan, captchaToken) {
       const e = email.trim().toLowerCase()
       if (!emailValid(e)) throw new GalatToko('email_tidak_valid', 'Alamat email belum benar.')
       if (sandi.length < SANDI_MIN) throw new GalatToko('sandi_lemah', `Kata sandi minimal ${SANDI_MIN} karakter.`)
@@ -103,27 +104,28 @@ export function buatBackendSupabase(url: string, kunci: string): Backend {
       const tujuan = typeof location !== 'undefined' ? location.origin + location.pathname : undefined
       // pilihan persetujuan ikut sebagai metadata; trigger database (catat_persetujuan_daftar) mencatatnya dengan waktu server
       const data0 = persetujuan ? { persetujuan: { versi: persetujuan.versi, syarat: true, promo: persetujuan.promo, analitik: persetujuan.analitik } } : undefined
-      const opsi = { ...(tujuan ? { emailRedirectTo: tujuan } : {}), ...(data0 ? { data: data0 } : {}) }
+      const opsi = { ...(tujuan ? { emailRedirectTo: tujuan } : {}), ...(data0 ? { data: data0 } : {}), ...(captchaToken ? { captchaToken } : {}) }
       const { data, error } = await klien.auth.signUp({ email: e, password: sandi, ...(Object.keys(opsi).length ? { options: opsi } : {}) })
       if (error) lempar(error)
       // email sudah terdaftar tetapi dikonfirmasi: Supabase mengembalikan user tanpa identities (anti-enumerasi)
       if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) throw new GalatToko('email_terdaftar', 'Email ini sudah terdaftar. Coba masuk.')
       return { perluKonfirmasi: !data.session }
     },
-    async masuk(email, sandi) {
-      const { error } = await klien.auth.signInWithPassword({ email: email.trim().toLowerCase(), password: sandi })
+    async masuk(email, sandi, captchaToken) {
+      const { error } = await klien.auth.signInWithPassword({ email: email.trim().toLowerCase(), password: sandi, ...(captchaToken ? { options: { captchaToken } } : {}) })
       if (error) lempar(error)
     },
     async keluar() {
       const { error } = await klien.auth.signOut()
       if (error) lempar(error)
     },
-    async kirimResetSandi(email) {
+    async kirimResetSandi(email, captchaToken) {
       const e = email.trim().toLowerCase()
       if (!emailValid(e)) throw new GalatToko('email_tidak_valid', 'Alamat email belum benar.')
       // tujuan = alamat web ini (harus ada di Supabase → Authentication → URL Configuration → Redirect URLs / Site URL)
       const tujuan = typeof location !== 'undefined' ? location.origin + location.pathname : undefined
-      const { error } = await klien.auth.resetPasswordForEmail(e, tujuan ? { redirectTo: tujuan } : undefined)
+      const opsiReset = { ...(tujuan ? { redirectTo: tujuan } : {}), ...(captchaToken ? { captchaToken } : {}) }
+      const { error } = await klien.auth.resetPasswordForEmail(e, Object.keys(opsiReset).length ? opsiReset : undefined)
       if (error) lempar(error)
       return {}
     },

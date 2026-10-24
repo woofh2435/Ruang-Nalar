@@ -1,0 +1,12 @@
+# Header keamanan untuk hosting yang membaca berkas _headers (Cloudflare Pages dan Netlify).
+# GitHub Pages TIDAK membaca berkas ini dan tidak bisa mengatur header sendiri. Di sana perlindungan yang sama dipasang lewat
+# <meta> di index.html (lihat scripts/csp.ts), kecuali frame-ancestors / X-Frame-Options yang hanya bisa lewat header.
+# Baris Content-Security-Policy di bawah dibuat dari scripts/csp.ts dan dijaga tests/keamanan.test.ts. Kalau berubah, tes akan
+# menampilkan baris yang benar untuk ditempel di sini.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-M7o1IflLNa4U3znMt5evoczsduDr281WAsl6aBNErZE=' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+  Strict-Transport-Security: max-age=31536000

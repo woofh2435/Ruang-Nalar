@@ -1,6 +1,6 @@
 import { useDeferredValue, useEffect, useId, useMemo, useRef, useState, type ClipboardEvent, type DragEvent, type ReactNode } from 'react'
 import { NAMA_PENULIS_DEFAULT, PLACEHOLDER_PENULIS } from '../../config'
-import { BATAS_BERKAS, bacaBerkas } from '../../lib/berkas'
+import { BATAS_BERKAS, bacaBerkas, namaBerkasTeksValid, periksaIsiTeks } from '../../lib/berkas'
 import { META_KOSONG, parseEbook, pisahEbook, susunEbook } from '../../lib/parser'
 import { buatId, simpanEbookLokal, useEbookLokal } from '../../lib/store'
 import { DAFTAR_TEMA, IKON_SAMPUL, TEMA } from '../../lib/tema'
@@ -206,7 +206,7 @@ export function Editor({ id, onSelesai, onTema }: Props) {
 
   const muatBerkas = async (file: File) => {
     setInfoBerkas(null)
-    if (!/\.(md|markdown|txt)$/i.test(file.name)) {
+    if (!namaBerkasTeksValid(file.name)) {
       setInfoBerkas({ jenis: 'galat', teks: `"${file.name}" bukan file .md atau .txt. Pilih file teks ebook, ya.` })
       katakan('adminError')
       return
@@ -220,6 +220,12 @@ export function Editor({ id, onSelesai, onTema }: Props) {
       const teks = await bacaBerkas(file)
       if (!teks.trim()) {
         setInfoBerkas({ jenis: 'galat', teks: `File "${file.name}" kosong.` })
+        katakan('adminError')
+        return
+      }
+      const bukanTeks = periksaIsiTeks(teks)
+      if (bukanTeks) {
+        setInfoBerkas({ jenis: 'galat', teks: bukanTeks })
         katakan('adminError')
         return
       }

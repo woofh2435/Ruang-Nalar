@@ -10,6 +10,7 @@ import type { Ebook, EbookMeta } from '../types'
 import { buatBackendDemo } from './demo'
 import { bacaKonfig } from './konfig'
 import { tentukanMode, type ModeToko } from './mode'
+import { bacaKunciCaptcha, setKunciCaptcha } from './captcha'
 import { buatBackendSupabase, petaGalat } from './supabase'
 import { GalatToko, type Backend, type CatatanPersetujuan, type HasilBayar, type HasilReset, type ItemKatalog, type JenisPersetujuan, type MasukanEbookToko, type Pembelian, type PersetujuanDaftar, type Sesi, type TautanAuth } from './tipe'
 
@@ -95,13 +96,13 @@ export interface Toko {
   muatKatalog(): Promise<void>
   muatPembelian(): Promise<void>
   muatIsi(ebookId: string): Promise<void>
-  daftar(email: string, sandi: string, persetujuan?: PersetujuanDaftar): Promise<{ perluKonfirmasi: boolean }>
-  masuk(email: string, sandi: string): Promise<void>
+  daftar(email: string, sandi: string, persetujuan?: PersetujuanDaftar, captchaToken?: string): Promise<{ perluKonfirmasi: boolean }>
+  masuk(email: string, sandi: string, captchaToken?: string): Promise<void>
   keluar(): Promise<void>
   riwayatPersetujuan(): Promise<CatatanPersetujuan[]>
   catatPersetujuan(jenis: JenisPersetujuan, status: boolean, versi: string): Promise<void>
   hapusAkun(): Promise<void>
-  kirimResetSandi(email: string): Promise<HasilReset>
+  kirimResetSandi(email: string, captchaToken?: string): Promise<HasilReset>
   pulihkanDariTautan(t: TautanAuth): Promise<void>
   ubahSandi(sandiBaru: string): Promise<void>
   beli(ebookId: string): Promise<HasilBayar>
@@ -209,20 +210,20 @@ export function buatToko(beAwal: Backend | null, modeAwal: ModeToko, opsi: { kon
         set({ isiStatus: { ...state.isiStatus, [ebookId]: 'galat' } })
       }
     },
-    async daftar(email, sandi, persetujuan) {
+    async daftar(email, sandi, persetujuan, captchaToken) {
       const b = wajib()
       try {
-        const h = await b.daftar(email, sandi, persetujuan)
+        const h = await b.daftar(email, sandi, persetujuan, captchaToken)
         if (!h.perluKonfirmasi) terapkanSesi(await b.sesiSaatIni())
         return h
       } catch (e) {
         throw bungkus(e)
       }
     },
-    async masuk(email, sandi) {
+    async masuk(email, sandi, captchaToken) {
       const b = wajib()
       try {
-        await b.masuk(email, sandi)
+        await b.masuk(email, sandi, captchaToken)
         terapkanSesi(await b.sesiSaatIni())
       } catch (e) {
         throw bungkus(e)
@@ -270,10 +271,10 @@ export function buatToko(beAwal: Backend | null, modeAwal: ModeToko, opsi: { kon
         }
       }
     },
-    async kirimResetSandi(email) {
+    async kirimResetSandi(email, captchaToken) {
       const b = wajib()
       try {
-        return await b.kirimResetSandi(email)
+        return await b.kirimResetSandi(email, captchaToken)
       } catch (e) {
         throw bungkus(e)
       }
@@ -379,6 +380,7 @@ export function mulaiToko(): Promise<void> {
       for (const p of peringatan) console.error('[Ruang Nalar] ' + p)
       setProfil(gabungProfil(PROFIL_BAWAAN, mentah))
       setIdentitas(gabungIdentitas(IDENTITAS_BAWAAN, mentah))
+      setKunciCaptcha(bacaKunciCaptcha(mentah))
       const mode = tentukanMode(konfig.url, konfig.kunci, konfig.demo, host)
       const be = mode === 'nyata' ? buatBackendSupabase(konfig.url, konfig.kunci) : mode === 'demo' ? buatBackendDemo() : null
       t.pasang(be, mode)
