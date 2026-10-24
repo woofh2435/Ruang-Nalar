@@ -1,0 +1,17 @@
+# dependensi & hasil build lokal
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vite/
+
+# catatan editor & sistem
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.log
+npm-debug.log*
+
+# CATATAN: folder docs/ SENGAJA tidak diabaikan (dipakai cadangan GitHub Pages "Deploy from a branch")
